@@ -57,7 +57,6 @@ object LoopRunners {
     val loopsMap = ConcurrentHashMap<String, LoopRunner>()
 
     fun processBitUpdate(bit: Int) {
-        println("bit $bit")
 
         for (runner in loopsMap.values) {
             runner.processBitUpdate(bit)
