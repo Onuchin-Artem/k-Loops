@@ -15,7 +15,20 @@ fun startBackgroundTasks(): List<Thread> {
 }
 
 
-fun loop(name: String, block: LoopContext.() -> Unit) {
-    val context = LoopContext(name)
-    LoopRunners.registerLoop(context, block)
+private fun makeLoop(block: LoopContext.() -> Unit) : LoopContext.() -> Unit {
+    return fun LoopContext.() {
+        block.invoke(this)
+        MusicPhraseRunners.getMusicPhrase(this).addEvent("loop_$loopName")
+    }
+}
+
+fun loop(loopName: String, block: LoopContext.() -> Unit) {
+    val context = LoopContext(loopName, events = listOf("loop_$loopName"))
+    MusicPhraseRunners.registerEventListener(context, makeLoop(block))
+    MusicPhraseRunners.getMusicPhrase(context).runCommands()
+}
+
+fun trigger(loopName: String, triggerEvents: List<String>,  block: LoopContext.() -> Unit) {
+    val context = LoopContext(loopName, triggerEvents)
+    MusicPhraseRunners.registerEventListener(context, block)
 }

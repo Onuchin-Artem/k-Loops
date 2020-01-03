@@ -81,7 +81,7 @@ fun musicLoop() {
                 bar++
             }
             lastBit = bar * Live.state().numberOfBeatsInBar + bit
-            LoopRunners.processBitUpdate(lastBit)
+            MusicPhraseRunners.processBitUpdate(lastBit)
         } catch (e: Throwable) {
             e.printStackTrace()
         }

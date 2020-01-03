@@ -4,6 +4,7 @@ import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.plus
 import com.google.gson.Gson
 import com.google.gson.JsonArray
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import kLoops.music.o
 import kLoops.music.toNoteLength
@@ -34,7 +35,9 @@ data class State(
 
 data class Parameter(val name: String, val id: Int)
 
-data class Device(val name: String, val id: Int, val parameters: List<Parameter>)
+data class DrumPad(val name: String, val id: Int, val note: Int)
+
+data class Device(val name: String, val id: Int, val parameters: List<Parameter>, val drumpads: List<DrumPad>)
 
 
 data class Track(
@@ -82,8 +85,21 @@ fun parseParameter(jsonObj: JsonObject) = Parameter(
 fun parseDevice(jsonObj: JsonObject) = Device(
         id = jsonObj["id"].asInt,
         name = jsonObj["title"].asString,
-        parameters = parseParameters(jsonObj["parameters"].asJsonArray)
+        parameters = parseParameters(jsonObj["parameters"].asJsonArray),
+        drumpads = parseDrumpads(jsonObj)
 )
+// TODO: remove this function
+fun parseDrumpads(jsonObj: JsonObject) =
+    if (jsonObj.has("drumpads")) {
+        jsonObj["drumpads"].asJsonArray.map { parseDrumpad(it.asJsonObject)}
+    } else {
+        emptyList()
+    }
+
+fun parseDrumpad(jsonObj: JsonObject) = DrumPad(
+        id = jsonObj["id"].asInt,
+        name = jsonObj["title"].asString,
+        note = jsonObj["note"].asInt)
 
 object Live {
     private var state: State? = null;

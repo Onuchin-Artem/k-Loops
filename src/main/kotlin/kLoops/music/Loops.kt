@@ -1,10 +1,10 @@
 package kLoops.music
 
 import kLoops.internal.Live
-import kLoops.internal.LoopRunners
+import kLoops.internal.MusicPhraseRunners
 import kLoops.internal.checkRatio
 
-class LoopContext(val loopName: String) {
+class LoopContext(val loopName: String, val events: List<String>) {
     fun track(name: String): MidiTrack {
         return MidiTrack(this, Live.state().lookupTrackId(name))
     }
@@ -31,8 +31,8 @@ class LoopContext(val loopName: String) {
     fun <T> List<T>.look(): T = look("global_tick")
     fun <T> List<T>.tick(): T = tick("global_tick")
 
-    fun silence(length: kLoops.music.NoteLength) {
-        LoopRunners.getLoop(this).addWait(length)
+    fun silence(length: NoteLength) {
+        MusicPhraseRunners.getMusicPhrase(this).addWait(length)
     }
 }
 
@@ -42,30 +42,30 @@ open class Track(val context: LoopContext, val id: Int) {
 
 class MidiTrack(context: LoopContext, id: Int) : Track(context, id) {
 
-    fun playCommandTemplate(note: Int, length: kLoops.music.NoteLength, velocity: Double): String {
+    fun playCommandTemplate(note: Int, length: NoteLength, velocity: Double): String {
         checkRatio("velocity", velocity)
         val midiVelocity = velocity.toMidiRange()
         val lengthMillis = length.toMillis()
         return "$id add {time} note $note $midiVelocity $lengthMillis"
     }
 
-    fun play(note: Int, length: kLoops.music.NoteLength, velocity: Double): MidiTrack {
-        LoopRunners.getLoop(context)
+    fun play(note: Int, length: NoteLength, velocity: Double): MidiTrack {
+        MusicPhraseRunners.getMusicPhrase(context)
                 .addCommand(length, playCommandTemplate(note, length, velocity))
         return this
     }
 
-    fun play(note: String, length: kLoops.music.NoteLength, velocity: Double): MidiTrack {
+    fun play(note: String, length: NoteLength, velocity: Double): MidiTrack {
         return play(note.toNote(), length, velocity)
     }
 
-    fun playAsync(note: Int, length: kLoops.music.NoteLength, velocity: Double): MidiTrack {
-        LoopRunners.getLoop(context)
-                .addCommand(kLoops.music._zero, playCommandTemplate(note, length, velocity))
+    fun playAsync(note: Int, length: NoteLength, velocity: Double): MidiTrack {
+        MusicPhraseRunners.getMusicPhrase(context)
+                .addCommand(_zero, playCommandTemplate(note, length, velocity))
         return this
     }
 
-    fun playAsync(note: String, length: kLoops.music.NoteLength, velocity: Double): MidiTrack {
+    fun playAsync(note: String, length: NoteLength, velocity: Double): MidiTrack {
         return playAsync(note.toNote(), length, velocity)
     }
 }

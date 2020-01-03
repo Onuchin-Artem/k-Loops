@@ -3,14 +3,15 @@ package kLoops.internal
 import kLoops.music.LoopContext
 import kLoops.music.NoteLength
 import kLoops.music.beat
-import java.util.concurrent.ConcurrentHashMap
 
-
-data class Command(val beginOfCommand: NoteLength, val command: String) {
-    val isActive = command != ""
+enum class CommandType {
+    Message, Event, Nothing
 }
 
-class LoopRunner(val context: LoopContext, val block: LoopContext.() -> Unit) {
+data class Command(val beginOfCommand: NoteLength, val type: CommandType, val command: String) {
+}
+
+class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> Unit) {
     val commands = mutableListOf<Command>()
     var beginTime = nextBarBit().beat()
 
@@ -18,55 +19,78 @@ class LoopRunner(val context: LoopContext, val block: LoopContext.() -> Unit) {
 
         val beginBeats = beginTime.beatInBar().toBeats() + 1.0
         val command = commandTemplate.replace("{time}", beginBeats.toString())
-        commands.add(Command(beginTime, command))
+        commands.add(Command(beginTime, CommandType.Message, command))
         addWait(noteLength)
     }
 
     fun addWait(noteLength: NoteLength) {
         beginTime += noteLength
-        commands.add(Command(beginTime, ""))
+        commands.add(Command(beginTime, CommandType.Nothing, ""))
+    }
+
+    fun addEvent(triggerEvent: String) {
+        commands.add(Command(beginTime, CommandType.Event, triggerEvent))
     }
 
     fun processBitUpdate(bit: Int) {
-        tryRerunLoop()
+        if (commands.isEmpty()) {
+            return
+        }
+        var topCommand : Command? = commands[0]
 
-        var topCommand = commands.get(0)
-
-        while (topCommand.beginOfCommand >= bit.beat()
+        while (topCommand != null &&
+                topCommand.beginOfCommand >= bit.beat()
                 && topCommand.beginOfCommand < (bit + 1).beat()) {
             commands.removeAt(0)
-            if (topCommand.isActive) {
-                commandQueue.offer(topCommand.command)
+            when (topCommand.type) {
+                CommandType.Message -> commandQueue.offer(topCommand.command)
+                CommandType.Event -> MusicPhraseRunners.triggerEvent(topCommand.command)
+                CommandType.Nothing -> {}
             }
-            tryRerunLoop()
-            topCommand = commands.get(0)
+            if (commands.isNotEmpty()) topCommand = commands[0]
+            else topCommand = null
         }
     }
 
-    private fun tryRerunLoop() {
-        if (commands.isEmpty()) {
-            block.invoke(context)
-            check(commands.isEmpty().not()) {
-                "Loop " + context.loopName + " should have content"
-            }
-        }
+    fun runCommands() {
+        block.invoke(context)
     }
+
+    override operator fun equals(other: Any?): Boolean =
+            other is MusicPhraseRunner && context.loopName == other.context.loopName
+
+    override fun hashCode(): Int = context.loopName.hashCode()
 }
 
-object LoopRunners {
-    val loopsMap = ConcurrentHashMap<String, LoopRunner>()
+object MusicPhraseRunners {
+    val runnersMap = mutableMapOf<String, MusicPhraseRunner>()
+    val eventsListeners = mutableMapOf<String, MutableSet<MusicPhraseRunner>>()
 
-    fun processBitUpdate(bit: Int) {
-
-        for (runner in loopsMap.values) {
+    //called from music loop only
+    @Synchronized fun processBitUpdate(bit: Int) {
+        println(bit)
+        for (runner in runnersMap.values) {
             runner.processBitUpdate(bit)
         }
-
     }
 
-    fun getLoop(context: LoopContext): LoopRunner = loopsMap[context.loopName]!!
+    //called from music loop only
+    @Synchronized fun getMusicPhrase(context: LoopContext): MusicPhraseRunner = runnersMap[context.loopName]!!
 
-    fun registerLoop(context: LoopContext, block: LoopContext.() -> Unit) {
-        loopsMap[context.loopName] = LoopRunner(context, block)
+    @Synchronized fun registerEventListener(context: LoopContext, block: LoopContext.() -> Unit) {
+        val newRunner = MusicPhraseRunner(context, block)
+        runnersMap[context.loopName] = newRunner
+        eventsListeners.forEach { (event, listeners) -> listeners.remove(newRunner) }
+        context.events.forEach { event ->
+            eventsListeners.computeIfAbsent(event) { mutableSetOf() }
+            eventsListeners[event]!!.add(newRunner)
+        }
+    }
+
+    //called from music loop only
+    @Synchronized fun triggerEvent(eventName: String) {
+        eventsListeners[eventName]?.forEach {
+            it.runCommands()
+        }
     }
 }

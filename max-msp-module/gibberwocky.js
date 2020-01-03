@@ -112,19 +112,6 @@ function get_devices_api(path) {
 
     }
 
-    /*
-            TODO:
-            Chains, for Racks
-            (determine racks by "can_have_chains" boolean
-            drum_pads, for drums (e.g. get names & note IDs)
-            (determine drums by "can_have_drum_pads" boolean)
-
-    // oddly, drumpads was 0 for Impulse
-    //console.log(api.get("name")[0], "drumpads", api.get("can_have_drum_pads")[0]);
-    */
-
-    // cache so that we don't keep visiting the same device:
-    //cached_device_ids[api.id] = tree;
 
     lom_cache_dict.setparse(api.id, JSON.stringify(tree));
 
