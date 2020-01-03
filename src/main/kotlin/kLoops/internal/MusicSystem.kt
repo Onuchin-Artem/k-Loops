@@ -3,6 +3,7 @@ package kLoops.internal
 import kLoops.music.LoopContext
 import kLoops.music.NoteLength
 import kLoops.music.beat
+import java.util.concurrent.ArrayBlockingQueue
 
 enum class CommandType {
     Message, Event, Nothing
@@ -32,24 +33,28 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
         commands.add(Command(beginTime, CommandType.Event, triggerEvent))
     }
 
-    fun processBitUpdate(bit: Int) {
+    fun processBitUpdate(bit: Int): Int {
         if (commands.isEmpty()) {
-            return
+            return 0
         }
-        var topCommand : Command? = commands[0]
+        var processedNum = 0
+        var topCommand: Command? = commands[0]
 
         while (topCommand != null &&
                 topCommand.beginOfCommand >= bit.beat()
                 && topCommand.beginOfCommand < (bit + 1).beat()) {
             commands.removeAt(0)
+            processedNum++
             when (topCommand.type) {
                 CommandType.Message -> commandQueue.offer(topCommand.command)
-                CommandType.Event -> MusicPhraseRunners.triggerEvent(topCommand.command)
-                CommandType.Nothing -> {}
+                CommandType.Event -> MusicPhraseRunners.processEvent(topCommand.command)
+                CommandType.Nothing -> {
+                }
             }
             if (commands.isNotEmpty()) topCommand = commands[0]
             else topCommand = null
         }
+        return processedNum
     }
 
     fun runCommands() {
@@ -62,35 +67,47 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
     override fun hashCode(): Int = context.loopName.hashCode()
 }
 
+val eventsQueue = ArrayBlockingQueue<String>(1024)
+
 object MusicPhraseRunners {
-    val runnersMap = mutableMapOf<String, MusicPhraseRunner>()
-    val eventsListeners = mutableMapOf<String, MutableSet<MusicPhraseRunner>>()
+    private val runnersMap = mutableMapOf<String, MusicPhraseRunner>()
+    private val eventsListeners = mutableMapOf<String, MutableSet<MusicPhraseRunner>>()
 
     //called from music loop only
-    @Synchronized fun processBitUpdate(bit: Int) {
-        println(bit)
-        for (runner in runnersMap.values) {
-            runner.processBitUpdate(bit)
+    @Synchronized
+    fun processBitUpdate(bit: Int) {
+        if (bit % 4 == 0) {
+            while (eventsQueue.isNotEmpty()) {
+                processEvent(eventsQueue.poll())
+            }
         }
+        do {
+            val numberOfProcessedCommands = runnersMap.values.map { runner -> runner.processBitUpdate(bit) }.sum()
+        } while (numberOfProcessedCommands > 0)
     }
 
     //called from music loop only
-    @Synchronized fun getMusicPhrase(context: LoopContext): MusicPhraseRunner = runnersMap[context.loopName]!!
+    @Synchronized
+    fun getMusicPhrase(context: LoopContext): MusicPhraseRunner = runnersMap[context.loopName]!!
 
-    @Synchronized fun registerEventListener(context: LoopContext, block: LoopContext.() -> Unit) {
+    @Synchronized
+    fun registerEventListener(context: LoopContext, block: LoopContext.() -> Unit) {
         val newRunner = MusicPhraseRunner(context, block)
         runnersMap[context.loopName] = newRunner
-        eventsListeners.forEach { (event, listeners) -> listeners.remove(newRunner) }
+        eventsListeners.keys.forEach { event -> eventsListeners[event]!!.remove(newRunner) }
         context.events.forEach { event ->
             eventsListeners.computeIfAbsent(event) { mutableSetOf() }
             eventsListeners[event]!!.add(newRunner)
         }
     }
 
+
     //called from music loop only
-    @Synchronized fun triggerEvent(eventName: String) {
+    @Synchronized
+    fun processEvent(eventName: String) {
         eventsListeners[eventName]?.forEach {
             it.runCommands()
         }
     }
 }
+

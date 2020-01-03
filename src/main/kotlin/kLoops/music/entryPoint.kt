@@ -28,7 +28,11 @@ fun loop(loopName: String, block: LoopContext.() -> Unit) {
     MusicPhraseRunners.getMusicPhrase(context).runCommands()
 }
 
-fun trigger(loopName: String, triggerEvents: List<String>,  block: LoopContext.() -> Unit) {
+fun runWhenEvent(loopName: String, triggerEvents: List<String>,  block: LoopContext.() -> Unit) {
     val context = LoopContext(loopName, triggerEvents)
     MusicPhraseRunners.registerEventListener(context, block)
+}
+
+fun triggerEventNextPulse(event: String) {
+    eventsQueue.offer(event)
 }

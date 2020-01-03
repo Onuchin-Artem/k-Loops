@@ -14,7 +14,6 @@ val commandQueue = ArrayBlockingQueue<String>(1024)
 val stateQueue = ArrayBlockingQueue<String>(1024)
 val bitsQueue = ArrayBlockingQueue<Int>(1024)
 
-
 suspend fun communicateLoop() {
     val client = HttpClient {
         install(WebSockets)
