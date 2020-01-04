@@ -3,6 +3,7 @@ package kLoops.internal
 import kLoops.music.LoopContext
 import kLoops.music.NoteLength
 import kLoops.music.beat
+import kLoops.music.o
 import java.util.concurrent.ArrayBlockingQueue
 
 enum class CommandType {
@@ -69,20 +70,26 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
 }
 
 val eventsQueue = ArrayBlockingQueue<String>(1024)
+@Volatile var pulsePeriod = 4 o 4
 
 object MusicPhraseRunners {
     private val runnersMap = mutableMapOf<String, MusicPhraseRunner>()
     private val eventsListeners = mutableMapOf<String, MutableSet<MusicPhraseRunner>>()
 
+    init {
+        val context = LoopContext("pulse", events = listOf("loop_pulse"))
+        val block = makeLoop {
+            while (eventsQueue.isNotEmpty()) {
+                processEvent(eventsQueue.poll(), getMusicPhrase(context).beginTime)
+            }
+            silence(pulsePeriod)
+        }
+        registerEventListener(context, block)
+        getMusicPhrase(context).runCommands()
+    }
     //called from music loop only
     @Synchronized
     fun processBitUpdate(bit: Int) {
-
-        if (bit % 4 == 0) {
-            while (eventsQueue.isNotEmpty()) {
-                processEvent(eventsQueue.poll(), bit.beat())
-            }
-        }
         do {
             val numberOfProcessedCommands = runnersMap.values.map { runner -> runner.processBitUpdate(bit) }.sum()
         } while (numberOfProcessedCommands > 0)
@@ -115,3 +122,9 @@ object MusicPhraseRunners {
     }
 }
 
+fun makeLoop(block: LoopContext.() -> Unit) : LoopContext.() -> Unit {
+    return fun LoopContext.() {
+        block.invoke(this)
+        MusicPhraseRunners.getMusicPhrase(this).addEvent("loop_$loopName")
+    }
+}

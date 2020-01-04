@@ -15,17 +15,10 @@ fun startBackgroundTasks(): List<Thread> {
 }
 
 
-private fun makeLoop(block: LoopContext.() -> Unit) : LoopContext.() -> Unit {
-    return fun LoopContext.() {
-        block.invoke(this)
-        MusicPhraseRunners.getMusicPhrase(this).addEvent("loop_$loopName")
-    }
-}
-
 fun loop(loopName: String, block: LoopContext.() -> Unit) {
     val context = LoopContext(loopName, events = listOf("loop_$loopName"))
     MusicPhraseRunners.registerEventListener(context, makeLoop(block))
-    MusicPhraseRunners.getMusicPhrase(context).runCommands()
+    triggerEventNextPulse("loop_$loopName")
 }
 
 fun runWhenEvent(loopName: String, triggerEvents: List<String>,  block: LoopContext.() -> Unit) {
@@ -35,4 +28,8 @@ fun runWhenEvent(loopName: String, triggerEvents: List<String>,  block: LoopCont
 
 fun triggerEventNextPulse(event: String) {
     eventsQueue.offer(event)
+}
+
+fun setPulsePeriod(length: NoteLength) {
+    pulsePeriod = length
 }
