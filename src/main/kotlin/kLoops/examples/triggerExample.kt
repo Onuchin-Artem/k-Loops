@@ -4,13 +4,12 @@ import kLoops.music.*
 
 fun main() {
     val runBackgroundTasks = startBackgroundTasks()
-
+    val listOfEvent = mutableListOf("a", "b", "c", "c", "c")
     runWhenEvent("kick", triggerEvents = listOf("a")) {
         track("drums").play(36, _8th, 0.5)
         if (1 in 2) triggerEvent("d")
-
-        if (3 in 5) triggerEvent("b")
-        else triggerEvent("c")
+        if (1 in 10) listOfEvent.shuffle()
+        triggerEvent(listOfEvent.tick())
     }
 
     runWhenEvent("bass", triggerEvents = listOf("a")) {
@@ -25,7 +24,13 @@ fun main() {
 
     runWhenEvent("hat", triggerEvents = listOf("c")) {
         track("drums").play(44, _8th, 0.5)
+        if (1 in 2) triggerEvent("e")
         triggerEvent("b")
+    }
+
+    runWhenEvent("hat_random", triggerEvents = listOf("e")) {
+        track("drums").play(44, _16th.t(), 0.4)
+         if (1 in 3) triggerEvent("e")
     }
 
     runWhenEvent("keys", triggerEvents = listOf("d")) {
