@@ -34,6 +34,7 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
     }
 
     fun processBitUpdate(bit: Int): Int {
+
         if (commands.isEmpty()) {
             return 0
         }
@@ -47,7 +48,7 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
             processedNum++
             when (topCommand.type) {
                 CommandType.Message -> commandQueue.offer(topCommand.command)
-                CommandType.Event -> MusicPhraseRunners.processEvent(topCommand.command)
+                CommandType.Event -> MusicPhraseRunners.processEvent(topCommand.command, topCommand.beginOfCommand)
                 CommandType.Nothing -> {
                 }
             }
@@ -76,9 +77,10 @@ object MusicPhraseRunners {
     //called from music loop only
     @Synchronized
     fun processBitUpdate(bit: Int) {
+
         if (bit % 4 == 0) {
             while (eventsQueue.isNotEmpty()) {
-                processEvent(eventsQueue.poll())
+                processEvent(eventsQueue.poll(), bit.beat())
             }
         }
         do {
@@ -104,8 +106,10 @@ object MusicPhraseRunners {
 
     //called from music loop only
     @Synchronized
-    fun processEvent(eventName: String) {
+    fun processEvent(eventName: String, newBeginTime: NoteLength) {
         eventsListeners[eventName]?.forEach {
+            it.beginTime = newBeginTime
+            it.commands.clear()
             it.runCommands()
         }
     }

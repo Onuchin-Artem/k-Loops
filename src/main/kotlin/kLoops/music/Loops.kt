@@ -34,6 +34,10 @@ class LoopContext(val loopName: String, val events: List<String>) {
     fun silence(length: NoteLength) {
         MusicPhraseRunners.getMusicPhrase(this).addWait(length)
     }
+
+    fun triggerEvent(event: String) {
+        MusicPhraseRunners.getMusicPhrase(this).addEvent(event)
+    }
 }
 
 
@@ -42,30 +46,16 @@ open class Track(val context: LoopContext, val id: Int) {
 
 class MidiTrack(context: LoopContext, id: Int) : Track(context, id) {
 
-    fun playCommandTemplate(note: Int, length: NoteLength, velocity: Double): String {
+    private fun playCommandTemplate(note: Int, length: NoteLength, velocity: Double): String {
         checkRatio("velocity", velocity)
         val midiVelocity = velocity.toMidiRange()
         val lengthMillis = length.toMillis()
         return "$id add {time} note $note $midiVelocity $lengthMillis"
     }
 
-    fun play(note: Int, length: NoteLength, velocity: Double): MidiTrack {
+    fun playAsync(note: Any, length: NoteLength, velocity: Double): MidiTrack {
         MusicPhraseRunners.getMusicPhrase(context)
-                .addCommand(length, playCommandTemplate(note, length, velocity))
+                .addCommand(_zero, playCommandTemplate(note.toNote().value, length, velocity))
         return this
-    }
-
-    fun play(note: String, length: NoteLength, velocity: Double): MidiTrack {
-        return play(note.toNote(), length, velocity)
-    }
-
-    fun playAsync(note: Int, length: NoteLength, velocity: Double): MidiTrack {
-        MusicPhraseRunners.getMusicPhrase(context)
-                .addCommand(_zero, playCommandTemplate(note, length, velocity))
-        return this
-    }
-
-    fun playAsync(note: String, length: NoteLength, velocity: Double): MidiTrack {
-        return playAsync(note.toNote(), length, velocity)
     }
 }
