@@ -86,7 +86,7 @@ fun parseDevice(jsonObj: JsonObject) = Device(
         id = jsonObj["id"].asInt,
         name = jsonObj["title"].asString,
         parameters = parseParameters(jsonObj["parameters"].asJsonArray),
-        drumpads = parseDrumpads(jsonObj)
+        drumpads = jsonObj["drumpads"].asJsonArray.map { parseDrumpad(it.asJsonObject)}
 )
 // TODO: remove this function
 fun parseDrumpads(jsonObj: JsonObject) =
@@ -98,7 +98,7 @@ fun parseDrumpads(jsonObj: JsonObject) =
 
 fun parseDrumpad(jsonObj: JsonObject) = DrumPad(
         id = jsonObj["id"].asInt,
-        name = jsonObj["title"].asString,
+        name = jsonObj["name"].asString,
         note = jsonObj["note"].asInt)
 
 object Live {

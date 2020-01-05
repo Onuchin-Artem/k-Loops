@@ -1,5 +1,3 @@
-// properties:
-var track = -1;
 
 ///////////////////////////////////////////////////////////////
 // see https://docs.cycling74.com/max7/vignettes/live_object_model
@@ -27,11 +25,7 @@ function get_param_api(path) {
 
     var tree = {
         id: api.id,
-        //path: path,
-        //type: api.type, // always "DeviceParameter"
         name: api.get("name")[0],
-        //original_name: api.get("original_name")[0],
-        //state: api.get("state")[0], // whether currently enabled or not
         value: api.get("value")[0], // not useful, because caching?
         quantized: (api.get("is_quantized")[0] === 1), // true for bools and enums
     };
@@ -39,7 +33,6 @@ function get_param_api(path) {
     // store ranges in tree and also in local dict
     tree.min = api.get("min")[0];
     tree.max = api.get("max")[0];
-    //ranges_obj[api.id] = { min: tree.min, max: tree.max };
 
     ranges_dict.setparse(api.id, JSON.stringify({min: tree.min, max: tree.max}));
 
@@ -66,29 +59,16 @@ function get_devices_api(path) {
         return JSON.parse(cached.stringify());
     }
 
-    /*
-    // use cached tree if available:
-    var cached = cached_device_ids[api.id];
-    if (cached !== undefined) {
-        // don't bother parsing this device if we already did
-        return cached;
-    }
-    */
-
     var title = api.get("name")[0];
-    if (title == "gibberwocky") {
-        // TODO: don't include self!
-        return;
-    }
 
     var tree = {
         id: api.id,
-        //path: path,
         type: api.get("type")[0], // 0(undefined), 1(instrument), 2(audio_effect), 4(midi_effect)
         title: title,
         name: api.get("class_display_name")[0],
         parameters: [],
-        drumpads: []
+        drumpads: [],
+        devices: []
     };
 
     var nparams = Math.min(1000, api.getcount("parameters"));
@@ -101,7 +81,7 @@ function get_devices_api(path) {
     }
 
     if (api.get("can_have_drum_pads")[0]) {
-        npads = api.getcount("visible_drum_pads")
+        var npads = api.getcount("visible_drum_pads");
         for (var i = 0; i < npads; i++) {
             try {
                 tree.drumpads.push(get_drumpads_api(path + " visible_drum_pads " + i));
@@ -109,9 +89,19 @@ function get_devices_api(path) {
                 console.log(e)
             }
         }
-
     }
 
+    if (api.get("can_have_chains")[0] && api.getcount("chains") > 0) {
+        var chainsApi = new LiveAPI(path + " chains 0");
+        var ndevices = chainsApi.getcount("devices");
+        for (var i = 0; i < ndevices; i++) {
+            try {
+                tree.devices.push(get_devices_api(path + " chains 0 devices " + i));
+            } catch (e) {
+                console.log(e)
+            }
+        }
+    }
 
     lom_cache_dict.setparse(api.id, JSON.stringify(tree));
 
@@ -123,12 +113,9 @@ function get_track_api(path, is_master) {
     var api = new LiveAPI(path);
     var tree = {
         id: api.id,
-        //path: unquote(api.path),
-        //type: api.type, // always "Track"
         name: api.get("name")[0],
         midi_input: api.get("has_midi_input")[0],	// 1 for midi tracks
-        devices: [],
-        /* clip_slots, view ; mute, arm, routing, playing/fired slot, audio/midi IO, etc. */
+        devices: []
     };
 
     var ndevices = api.getcount("devices");
@@ -176,10 +163,6 @@ function bang() {
         tree.returns.push(get_track_api("live_set return_tracks " + i));
     }
     tree.master = get_track_api("live_set master_track");
-
-    /*
-    todo?: cue_points,scenes,view,visible_tracks
-    */
 
     // set dicts from js:
     var s = JSON.stringify(tree);
