@@ -14,7 +14,7 @@ fun main() {
 
     loop("keys") {
         silence(8 o 8)
-        track("keys2")
+        track("keys 2")
                 .playChord(listOf("a3", "c4", "e4"), _8th, 0.5)
     }
 

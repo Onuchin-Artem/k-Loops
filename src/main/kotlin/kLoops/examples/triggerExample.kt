@@ -34,7 +34,7 @@ fun main() {
     }
 
     runWhenEvent("keys", triggerEvents = listOf("d")) {
-        listOf("a4", "d3", "c5").forEach { note -> track("keys1").play(note, _4th, 0.5)}
+        listOf("a4", "d3", "c5").forEach { note -> track("keys 1").play(note, _4th, 0.5)}
     }
 
     triggerEventNextPulse("a")

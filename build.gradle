@@ -15,6 +15,7 @@ defaultTasks 'run'
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 
@@ -26,6 +27,7 @@ dependencies {
     implementation "io.ktor:ktor-client-js:$ktor_version"
     implementation "io.ktor:ktor-client-okhttp:$ktor_version"
     implementation "com.github.salomonbrys.kotson:kotson:2.5.0"
+    implementation 'com.yundom:kache:1.0.5'
     testCompile 'junit:junit:4.11'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }

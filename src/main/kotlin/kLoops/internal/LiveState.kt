@@ -15,17 +15,18 @@ data class State(
         val signature: kLoops.music.NoteLength,
         val tracks: List<Track>
 ) {
-    val reverseNameMap = tracks.map { it.name to it.id }.toMap()
+    val reverseNameMap = tracks.map { it.name to it.id }.toSearch()
 
     init {
         check(signature == 4 o 4) {
             "Please set signature to 4/4! " +
-                    "Different signatures are not supported yet"
+                    "Different signatures are not supported yet\n" +
+                    "Notice that you can control signature in k-Loops by setting setPulsePeriod(noteLength)"
         }
     }
 
     fun lookupTrackId(name: String): Int =
-            reverseNameMap.getOrElse(name) { throw IllegalArgumentException("No track $name") }
+            reverseNameMap.findOrElse(name) { throw IllegalArgumentException("No track $name") }
 
     fun lookupTrackId(number: Int): Int =
             tracks[number - 1].id
@@ -88,13 +89,6 @@ fun parseDevice(jsonObj: JsonObject) = Device(
         parameters = parseParameters(jsonObj["parameters"].asJsonArray),
         drumpads = jsonObj["drumpads"].asJsonArray.map { parseDrumpad(it.asJsonObject)}
 )
-// TODO: remove this function
-fun parseDrumpads(jsonObj: JsonObject) =
-    if (jsonObj.has("drumpads")) {
-        jsonObj["drumpads"].asJsonArray.map { parseDrumpad(it.asJsonObject)}
-    } else {
-        emptyList()
-    }
 
 fun parseDrumpad(jsonObj: JsonObject) = DrumPad(
         id = jsonObj["id"].asInt,

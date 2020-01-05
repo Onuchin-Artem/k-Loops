@@ -7,17 +7,17 @@ fun main() {
 
     loop("keys") {
         val notes = listOf("c4", "g4", "e4")
-        val synths = listOf("keys1", "keys2")
+        val synths = listOf("keys 1", "keys 2")
         track(synths.tick())
                 .play(notes.look(), _8th, 0.5)
         silence(3 o 4)
-        track("keys1")
+        track("keys 1")
                 .play(notes.tick(), _8th, 0.5)
     }
 
     loop("keys2") {
         val notes = listOf("c4", "c3", "e3", "d3")
-        track("keys2")
+        track("keys 2")
                 .play(notes.tick(), _4th, 0.5)
         silence(_half)
     }
