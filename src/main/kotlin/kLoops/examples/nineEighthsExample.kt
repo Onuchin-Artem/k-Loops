@@ -6,7 +6,7 @@ fun main() {
     setPulsePeriod(9 o 8)
     val runBackgroundTasks = startBackgroundTasks()
     loop("drums") {
-        val drums = listOf(36, 36, 38, 36, 36, 38, 36, 38, 44)
+        val drums = "k k sn k k sn k sn co".split(' ')
         track("drums")
                 .play(drums.tick(), _8th, 0.5)
     }
@@ -19,7 +19,7 @@ fun main() {
     }
 
     runWhenEvent("bass", triggerEvents = listOf("loop_pulse")) {
-        val notes = listOf("e0", "e0", "a0", "e0", "e0", "a0", "e0", "a0")
+        val notes = "e0 e0 a0 e0 e0 a0 e0 a0".split(' ')
         notes.forEach { note ->
             track("bass").play(note, _16th, 0.5)
             silence(_16th)

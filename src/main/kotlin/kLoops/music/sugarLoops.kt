@@ -1,13 +1,11 @@
 package kLoops.music
 
-fun MidiTrack.play(note: Any, length: NoteLength, velocity: Double): MidiTrack {
+fun MidiTrackWrapper.play(note: Any, length: NoteLength, velocity: Double) {
     playAsync(note, length, velocity)
     context.silence(length)
-    return this
 }
 
-fun MidiTrack.playChord(chord: List<Any>, length: NoteLength, velocity: Double): MidiTrack {
+fun MidiTrackWrapper.playChord(chord: List<Any>, length: NoteLength, velocity: Double) {
     chord.forEach { note -> playAsync(note, length, velocity) }
     context.silence(length)
-    return this
 }

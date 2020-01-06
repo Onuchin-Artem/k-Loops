@@ -48,20 +48,20 @@ fun main() {
         silence(_4th - length)
     }
 
-    loop("drums_low") {
+    loop("drums") {
         // play is not super convenient for playing drums
         val isSnare = listOf(1.0, 0.0).tick()
-        track("drums").playAsync(36, _16th, 1.0)
-        track("drums").playAsync(38, _16th, isSnare)
+        track("drums").playAsync("kick", _16th, 1.0)
+        track("drums").playAsync("snare", _16th, isSnare)
         silence(_8th)
-        val hhNote = listOf(44, 44, 46).look()
+        val hhNote = listOf("hihat closed", "hihat closed", "hihat open").look()
         track("drums").play(hhNote, _16th, 0.9 * Math.random() * 0.2)
         if (1 in 4 && isSnare == 0.0) track("drums").play(38, _16th, 0.5)
         else silence(_16th)
     }
 
     loop("random_HH") {
-        if (1 in 4) track("drums").play(44, _16th.t(), 0.5)
+        if (1 in 4) track("drums").play("hihat closed", _16th.t(), 0.5)
         silence(randomNoteLength())
     }
 

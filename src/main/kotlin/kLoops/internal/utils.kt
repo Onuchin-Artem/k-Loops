@@ -46,7 +46,7 @@ class Search<T>(collectionOfPairs: List<Pair<String, T>>) {
     @Synchronized fun findOrElse(substring : String, block: () -> T): T {
         if (cache.exist(substring)) return cache.get(substring)!!
         val allMatched = listOfPairs.filter { pair ->
-            pair.key().contains(substring.normalize())
+            substring.normalize().split(" ").all {  pair.key().contains(it) }
         }
         if (allMatched.isEmpty()) return block.invoke()
         cache.put(substring, allMatched.first().value)
