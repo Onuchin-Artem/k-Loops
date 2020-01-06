@@ -1,5 +1,6 @@
-![k-Loops](logo/k-Loops logo for GitHub.png "k-Loops")
+## k-Loops Live Coding
 
+<img src="https://github.com/Onuchin-Artem/k-Loops/raw/master/logo/K-Loops%20logo%20full.png"  width="500" alt="k-loops"/>
 
 Live Coding System for  Ableton Live written in Kotlin.
 
