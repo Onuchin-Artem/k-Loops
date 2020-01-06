@@ -1,6 +1,6 @@
 ## k-Loops Live Coding
 
-[k-loops](qqq)
+![k-loops](https://github.com/Onuchin-Artem/k-Loops/raw/master/logo/K-Loops%20logo%20full.png)
 
 Live Coding System for  Ableton Live written in Kotlin.
 
