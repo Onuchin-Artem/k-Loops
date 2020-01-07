@@ -9,3 +9,4 @@ fun MidiTrackWrapper.playChord(chord: List<Any>, length: NoteLength, velocity: D
     chord.forEach { note -> playAsync(note, length, velocity) }
     context.silence(length)
 }
+
