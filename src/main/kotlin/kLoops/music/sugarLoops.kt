@@ -5,8 +5,16 @@ fun MidiTrackWrapper.play(note: Any, length: NoteLength, velocity: Double) {
     context.silence(length)
 }
 
-fun MidiTrackWrapper.playChord(chord: List<Any>, length: NoteLength, velocity: Double) {
+fun MidiTrackWrapper.playChordAsync(chord: List<Any>, length: NoteLength, velocity: Double) {
     chord.forEach { note -> playAsync(note, length, velocity) }
+}
+
+fun MidiTrackWrapper.playChord(chord: List<Any>, length: NoteLength, velocity: Double) {
+    playChordAsync(chord, length, velocity)
     context.silence(length)
 }
+
+
+
+
 
