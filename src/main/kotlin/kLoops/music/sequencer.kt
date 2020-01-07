@@ -1,5 +1,7 @@
 package kLoops.music
 
+import kLoops.internal.Parameter
+
 
 fun LoopContext.sequencer(stepLength: NoteLength, id: String = globalCounter, block: SequenceContext.() -> Unit) {
     val seqContext = SequenceContext(stepLength, this, id)
@@ -22,5 +24,4 @@ class SequenceContext(
 
     fun String.play(track: MidiTrackWrapper, velocity: Double, length: NoteLength = stepLength) =
             this.toSeq().play(track, velocity, length)
-
-}
+    }

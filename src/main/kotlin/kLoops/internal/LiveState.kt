@@ -30,37 +30,72 @@ data class State(
     val numberOfBeatsInBar = 4
 }
 
-data class Parameter(val name: String, val id: Int)
 
 data class DrumPad(val name: String, val id: Int, val note: Int)
 
-data class Device(
-        val name: String,
-        val id: Int,
-        val parameters: List<Parameter>,
-        val drumpads: List<DrumPad>,
-        val devices: List<Device>)
-
+interface HasParameters{
+    fun device(device: String): HasParameters
+    fun parameter(parameter: String): Parameter
+}
 
 private fun traverse(devices: List<Device>): List<Device> =
-    devices.flatMap { device -> traverse(device.devices) + listOf(device) }
-
+        devices.flatMap { device -> traverse(device.devices) + listOf(device) }
 
 data class Track(
         val name: String,
         val id: Int,
         val devices: List<Device>,
         val mixParameters: List<Parameter>
-) {
+) : HasParameters {
     private val drumsSearch = traverse(devices)
             .flatMap { it.drumpads }
             .map { it.name to it.note }
             .toSearch()
 
+    private val devicesSearch = devices
+            .map { it.name to it }
+            .toSearch()
+
+    private val mixParametersSearch = mixParameters
+            .map { it.name to it }
+            .toSearch()
+
+    val mainDevice = devices.filter { it.isInstrument }.firstOrNull()
+
     fun lookupDrumNote(name: String): Int =
             drumsSearch.findOrElse(name) { throw IllegalArgumentException("No drum $name") }
 
+    override fun device(device: String): HasParameters =
+            devicesSearch.findOrElse(device) { throw IllegalArgumentException("No device $device") }
+    override fun parameter(parameter: String) =
+            mixParametersSearch.findOrElse(parameter) { throw IllegalArgumentException("No device $parameter") }
 }
+
+
+data class Device(
+        val name: String,
+        val id: Int,
+        val parameters: List<Parameter>,
+        val drumpads: List<DrumPad>,
+        val devices: List<Device>,
+        val isInstrument: Boolean) : HasParameters {
+    private val devicesSearch = devices
+            .map { it.name to it }
+            .toSearch()
+    private val mixParametersSearch = parameters
+            .map { it.name to it }
+            .toSearch()
+
+    override fun device(device: String): HasParameters =
+            devicesSearch.findOrElse(device) { throw IllegalArgumentException("No device $device") }
+    override fun parameter(parameter: String) =
+            mixParametersSearch.findOrElse(parameter) { throw IllegalArgumentException("No device $parameter") }
+
+}
+
+data class Parameter(val name: String, val id: Int)
+
+
 
 fun parseState(json: String): State {
     val gson = Gson()
@@ -104,7 +139,8 @@ fun parseDevice(jsonObj: JsonObject) = Device(
         name = jsonObj["title"].asString,
         parameters = parseParameters(jsonObj["parameters"].asJsonArray),
         drumpads = jsonObj["drumpads"].asJsonArray.map { parseDrumpad(it.asJsonObject)},
-        devices = parseDevices(jsonObj))
+        devices = parseDevices(jsonObj),
+        isInstrument = jsonObj["type"].asInt == 1)
 
 
 fun parseDrumpad(jsonObj: JsonObject) = DrumPad(

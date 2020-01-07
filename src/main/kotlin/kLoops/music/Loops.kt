@@ -1,9 +1,6 @@
 package kLoops.music
 
-import kLoops.internal.Live
-import kLoops.internal.MusicPhraseRunners
-import kLoops.internal.Track
-import kLoops.internal.checkRatio
+import kLoops.internal.*
 import kotlin.math.round
 
 open class LoopContext(val loopName: String, val events: List<String>) {
@@ -50,7 +47,7 @@ open class LoopContext(val loopName: String, val events: List<String>) {
         }
     }
 
-    fun setLoopVolume(velocity: Double) {
+    fun setLoopVelocity(velocity: Double) {
         checkRatio("velocity", velocity)
         MusicPhraseRunners.getMusicPhrase(this).addChangeLoopVelocity(velocity)
     }
@@ -62,8 +59,22 @@ open class LoopContext(val loopName: String, val events: List<String>) {
     fun triggerEvent(event: String) {
         MusicPhraseRunners.getMusicPhrase(this).addEvent(event)
     }
+
+    fun Parameter.setValue(value: Double) {
+        checkRatio("value", value)
+        val command = "add {time} set ${this.id} $value"
+        MusicPhraseRunners.getMusicPhrase(this@LoopContext).addCommand(command)
+    }
+
+    fun Parameter.setValue(generator: Generator) = setValue(generator.look())
 }
 
 
 open class TrackWrapper(val context: LoopContext, val track: Track) {
+
+    fun pan() = track.parameter("panning")
+    fun volume() = track.parameter("volume")
+    fun parameter(parameter: String): Parameter = track.mainDevice?.parameter(parameter)!!
+    fun sends(returnTrack: String) = track.parameter(returnTrack)
+    fun device(device: String)  = track.device(device)
 }

@@ -17,11 +17,10 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
     var beginTime = nextBarBit().beat()
     var loopVelocity = 1.0
 
-    fun addCommand(noteLength: NoteLength, commandTemplate: String) {
+    fun addCommand(commandTemplate: String) {
         val beginBeats = beginTime.beatInBar().toBeats() + 1.0
         val command = commandTemplate.replace("{time}", beginBeats.toString())
         commands.add(Command(beginTime, CommandType.Message, command))
-        addWait(noteLength)
     }
 
     fun addWait(noteLength: NoteLength) {

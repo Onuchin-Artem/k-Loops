@@ -18,7 +18,7 @@ class MidiTrackWrapper(context: LoopContext, track: Track) : TrackWrapper(contex
     fun playAsync(note: Any, length: NoteLength, velocity: Double) {
         if (note.toString() == ".") return
         val commandTemplate = playCommandTemplate(note.toNote().value, length, velocity) ?: return
-        MusicPhraseRunners.getMusicPhrase(context).addCommand(_zero, commandTemplate)
+        MusicPhraseRunners.getMusicPhrase(context).addCommand(commandTemplate)
     }
 
     data class Note(val value: Int)
