@@ -41,7 +41,7 @@ fun main() {
     loop("pads") {
         val length = listOf(_zero, _8th).reflect().tick()
         silence(length)
-        listOf("c3", "e4", "a5").reversed().forEach {
+        listOf("c3", "e4", "g5").reversed().forEach {
             track("pad").playAsync(it, 2.bar(), 0.3 + Math.random() * 0.1)
             silence(_4th.triplet())
         }

@@ -19,7 +19,7 @@ fun main() {
     }
 
     runWhenEvent("bass", triggerEvents = listOf("loop_pulse")) {
-        val notes = "e0 e0 a0 e0 e0 a0 e0 a0".split(' ')
+        val notes = "e0 e0 a0 e0 e0 a0 g0 a0".split(' ')
         notes.forEach { note ->
             track("bass").play(note, _16th, 0.5)
             silence(_16th)

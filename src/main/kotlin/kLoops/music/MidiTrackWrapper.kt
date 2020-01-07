@@ -6,17 +6,19 @@ import kLoops.internal.checkRatio
 
 class MidiTrackWrapper(context: LoopContext, track: Track) : TrackWrapper(context, track) {
 
-    private fun playCommandTemplate(note: Int, length: NoteLength, velocity: Double): String {
+    private fun playCommandTemplate(note: Int, length: NoteLength, velocity: Double): String? {
+        val loopVelocity = MusicPhraseRunners.getMusicPhrase(context).loopVelocity
+        if (loopVelocity < 0.00000001) return null
         checkRatio("velocity", velocity)
-        val midiVelocity = velocity.toMidiRange()
+        val midiVelocity = velocity.toMidiRange() * loopVelocity
         val lengthMillis = length.toMillis()
         return "${track.id} add {time} note $note $midiVelocity $lengthMillis"
     }
 
     fun playAsync(note: Any, length: NoteLength, velocity: Double) {
         if (note.toString() == ".") return
-        MusicPhraseRunners.getMusicPhrase(context)
-                .addCommand(_zero, playCommandTemplate(note.toNote().value, length, velocity))
+        val commandTemplate = playCommandTemplate(note.toNote().value, length, velocity) ?: return
+        MusicPhraseRunners.getMusicPhrase(context).addCommand(_zero, commandTemplate)
     }
 
     data class Note(val value: Int)
@@ -38,9 +40,9 @@ class MidiTrackWrapper(context: LoopContext, track: Track) : TrackWrapper(contex
                 "f#" -> 6
                 "g" -> 7
                 "g#" -> 8
-                "a" -> 7
-                "a#" -> 9
-                "b" -> 10
+                "a" -> 9
+                "a#" -> 10
+                "b" -> 11
                 else -> throw IllegalArgumentException("Non-existent note: $note")
             }
             return Note(24 + octave * 12 + noteInt)
@@ -61,7 +63,6 @@ class MidiTrackWrapper(context: LoopContext, track: Track) : TrackWrapper(contex
                 "wd" -> "wood"
                 else -> this
             }
-
             return track.lookupDrumNote(drumSynonym).toNote()
         }
     }

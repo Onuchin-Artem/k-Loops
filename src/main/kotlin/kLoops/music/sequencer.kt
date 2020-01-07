@@ -20,4 +20,7 @@ class SequenceContext(
     fun <T : Any> List<T>.play(track: MidiTrackWrapper, velocity: Double, length: NoteLength = stepLength) =
             track.playSequence(this, velocity, length)
 
+    fun String.play(track: MidiTrackWrapper, velocity: Double, length: NoteLength = stepLength) =
+            this.toSeq().play(track, velocity, length)
+
 }

@@ -24,7 +24,7 @@ fun LoopContext.trapezoid(
         this.LFO(from, to, period, phase, jitter) { step ->
             if (step in 0..t1) step.toDouble() / t1.toDouble()
             else if (step in t1..t2) 1.0
-            else if (step in t2..t3) (step - t3).toDouble() / (period - t3).toDouble()
+            else if (step in t2..t3) (1 + (t3 - step).toDouble()) / (period - t3).toDouble()
             else 0.0
         }
 

@@ -7,18 +7,17 @@ import kLoops.music.o
 import java.util.concurrent.ArrayBlockingQueue
 
 enum class CommandType {
-    Message, Event, Nothing
+    Message, Event, Nothing, ChangeLoopVelocity
 }
 
-data class Command(val beginOfCommand: NoteLength, val type: CommandType, val command: String) {
-}
+data class Command(val beginOfCommand: NoteLength, val type: CommandType, val command: String)
 
 class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> Unit) {
     val commands = mutableListOf<Command>()
     var beginTime = nextBarBit().beat()
+    var loopVelocity = 1.0
 
     fun addCommand(noteLength: NoteLength, commandTemplate: String) {
-
         val beginBeats = beginTime.beatInBar().toBeats() + 1.0
         val command = commandTemplate.replace("{time}", beginBeats.toString())
         commands.add(Command(beginTime, CommandType.Message, command))
@@ -32,6 +31,10 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
 
     fun addEvent(triggerEvent: String) {
         commands.add(Command(beginTime, CommandType.Event, triggerEvent))
+    }
+
+    fun addChangeLoopVelocity(velocity: Double) {
+        commands.add(Command(beginTime, CommandType.ChangeLoopVelocity, velocity.toString()))
     }
 
     fun processBitUpdate(bit: Int): Int {
@@ -50,8 +53,8 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
             when (topCommand.type) {
                 CommandType.Message -> commandQueue.offer(topCommand.command)
                 CommandType.Event -> MusicPhraseRunners.processEvent(topCommand.command, topCommand.beginOfCommand)
-                CommandType.Nothing -> {
-                }
+                CommandType.ChangeLoopVelocity -> loopVelocity = topCommand.command.toDouble()
+                CommandType.Nothing -> {}
             }
             if (commands.isNotEmpty()) topCommand = commands[0]
             else topCommand = null
