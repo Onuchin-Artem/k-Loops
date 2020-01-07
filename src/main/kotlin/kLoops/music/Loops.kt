@@ -51,8 +51,10 @@ open class LoopContext(val loopName: String, val events: List<String>) {
         checkRatio("velocity", velocity)
         MusicPhraseRunners.getMusicPhrase(this).addChangeLoopVelocity(velocity)
     }
+    fun setLoopVelocity(gen: Generator) = setLoopVelocity(gen.look())
 
-    fun silence(length: NoteLength) {
+
+        fun silence(length: NoteLength) {
         MusicPhraseRunners.getMusicPhrase(this).addWait(length)
     }
 
