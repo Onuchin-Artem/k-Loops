@@ -24,3 +24,6 @@ fun String.toSeq() = this.split(' ').filter { it != "" }
 fun <T> List<T>.toSeq() = this
 
 fun <T> T.toSeq() = listOf(this)
+
+
+fun <T> T.toSeq(pattern: String) = listOf(this)
