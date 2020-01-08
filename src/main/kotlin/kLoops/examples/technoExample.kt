@@ -12,7 +12,7 @@ fun main() {
             "k . co . cl . co co".play(d, velocity = 0.5)
             val bass2Length = listOf(2, 5, 7, 1, 3).look() o 64
             val velocity = listOf(0.2, 0.0, 0.1, 0.1).look()
-            "a1 . g1 g1".play(b, velocity = velocity, length = bass2Length)
+            "a1 . . g1".play(b, velocity = velocity, length = bass2Length)
 
             val cutoff = triag(from = 0.01, to = 0.25, period = 12, t1 = 8)
             val mod = sine(from = 0.6, to = 0.7, period = 4, jitter = 0.1)
@@ -30,7 +30,7 @@ fun main() {
             setLoopVelocity(trapezoid(period = 16 * 16, t1 = 4 * 16))
             val d = track("drums")
             "k . . sn k . .".play(d, velocity = 0.7)
-            ". . oh ch . ".play(d, velocity = 0.1)
+            ". . rd ch . .".play(d, velocity = 0.1, length = _32nd)
             "clave clave . . clave .".play(d, velocity = 0.5)
         }
     }

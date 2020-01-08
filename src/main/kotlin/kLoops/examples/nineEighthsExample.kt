@@ -6,9 +6,10 @@ fun main() {
     setPulsePeriod(9 o 8)
     val runBackgroundTasks = startBackgroundTasks()
     loop("drums") {
-        val drums = "k . k k . k k k ch".split(' ')
-        track("drums")
-                .play(drums.tick(), _8th, 0.5)
+        sequencer(_8th) {
+            "k . k k . k k k ch".play(track("drums"), 0.5)
+            listOf("kick 4", ".", ".", "kick 4", ".", ".", "kick 4", ".", ".").play(track("drums"), 1.0)
+        }
     }
     Thread.sleep(5000)
 
@@ -30,8 +31,8 @@ fun main() {
     runWhenEvent("pad", triggerEvents = listOf("loop_pulse")) {
         track("pad").playAsync(listOf("e5", "a5").tick(), _half, 0.05)
         silence(_4th)
-        track("drums").play("snare", _8th, 0.6)
-        track("drums").play("ride", _16th, 0.3)
+        track("drums").play("snare", _8th, 0.8)
+        track("drums").play("conga mid", _16th, 0.1)
         track("drums").play("closed hihat", _16th, 0.3)
     }
 

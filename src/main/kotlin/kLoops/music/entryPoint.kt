@@ -4,16 +4,26 @@ import kLoops.internal.*
 import kotlinx.coroutines.runBlocking
 import kotlin.concurrent.thread
 
-fun startBackgroundTasks(): List<Thread> {
+var listOfThreads: List<Thread>? = null
+
+@Synchronized fun startBackgroundTasks(): List<Thread> {
+    if (listOfThreads != null) {
+        return listOfThreads!!
+    }
+    println("started")
     commandQueue.offer("get_scene")
-    return listOf(
+    listOfThreads = listOf(
             thread { runBlocking { communicateLoop() } },
-
             thread { stateRequestLoop() },
-
             thread { musicLoop() })
+    return listOfThreads!!
 }
-
+@Synchronized fun reset() {
+    if (listOfThreads == null) return
+    listOfThreads!!.forEach { it.stop() }
+    listOfThreads = null
+    println("stopped")
+}
 
 fun loop(loopName: String, block: LoopContext.() -> Unit) {
     val context = LoopContext(loopName, events = listOf("loop_$loopName"))
