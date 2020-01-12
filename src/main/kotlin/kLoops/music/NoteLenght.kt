@@ -22,10 +22,11 @@ private fun gcd(a: Int, b: Int): Int {
     return gcd(b, a % b)
 }
 
-fun randomNoteLength() = (1 + (Math.random() * 31).toInt()) o 32
+fun randomNoteLength() = (1 + (Math.random() * 1023).toInt()) o 1024
 
+fun Double.toNoteLength() = (round(1024 * this).toInt() o 1024).simplify()
 
-data class NoteLength(val nominator: Int, val denominator: Int) {
+data class NoteLength(val nominator: Int, val denominator: Int): Comparable<NoteLength> {
     init {
         check(nominator >= 0) { "nominator must be non-negative but was $nominator" }
         check(denominator > 0) { "denominator must be positive but was $denominator" }
@@ -56,7 +57,7 @@ data class NoteLength(val nominator: Int, val denominator: Int) {
             NoteLength(nominator * other.denominator - other.nominator * denominator,
                     denominator * other.denominator).simplify()
 
-    operator fun compareTo(other: NoteLength) =
+    override operator fun compareTo(other: NoteLength) =
             (nominator * other.denominator).compareTo(other.nominator * denominator)
 
     fun beatInBar() =

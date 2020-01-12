@@ -1,8 +1,5 @@
 package kLoops.music
 
-import kLoops.internal.Parameter
-
-
 fun LoopContext.sequencer(stepLength: NoteLength, id: String = globalCounter, block: SequenceContext.() -> Unit) {
     val seqContext = SequenceContext(stepLength, this, id)
     var i = 0

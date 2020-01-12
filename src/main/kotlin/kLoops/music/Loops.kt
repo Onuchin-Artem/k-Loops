@@ -5,6 +5,8 @@ import kotlin.math.round
 
 open class LoopContext(val loopName: String, val events: List<String>) {
     constructor(context: LoopContext) : this(context.loopName, context.events)
+    var trigger: String = ""
+    var parameter: Any = Any()
 
     fun track(name: String): MidiTrackWrapper {
         return MidiTrackWrapper(this, Live.state().lookupTrackId(name))
@@ -58,8 +60,8 @@ open class LoopContext(val loopName: String, val events: List<String>) {
         MusicPhraseRunners.getMusicPhrase(this).addWait(length)
     }
 
-    fun triggerEvent(event: String) {
-        MusicPhraseRunners.getMusicPhrase(this).addEvent(event)
+    fun triggerEvent(event: String, parameter: Any = Any()) {
+        MusicPhraseRunners.getMusicPhrase(this).addEvent(event, parameter)
     }
 
     fun Parameter.setValue(value: Double) {

@@ -6,34 +6,41 @@ import kLoops.music.beat
 import kLoops.music.o
 import java.util.concurrent.ArrayBlockingQueue
 
-enum class CommandType {
-    Message, Event, Nothing, ChangeLoopVelocity
-}
+sealed class Command : Comparable<Command> {
+    abstract val beginOfCommand: NoteLength;
+    override operator fun compareTo(other: Command):Int =
+            compareBy(Command::beginOfCommand)
+                    .thenComparing(compareBy(Command::toString))
+                    .compare(this, other)
 
-data class Command(val beginOfCommand: NoteLength, val type: CommandType, val command: String)
+}
+data class Message(override val beginOfCommand: NoteLength, val command: String): Command()
+data class Event(override val beginOfCommand: NoteLength, val event: String, val parameter: Any): Command()
+data class Nothing(override val beginOfCommand: NoteLength) : Command()
+data class ChangeLoopVelocity(override val beginOfCommand: NoteLength, val velocity: Double): Command()
 
 class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> Unit) {
-    val commands = mutableListOf<Command>()
+    private val commands = sortedSetOf<Command>()
     var beginTime = nextBarBit().beat()
     var loopVelocity = 1.0
 
     fun addCommand(commandTemplate: String) {
         val beginBeats = beginTime.beatInBar().toBeats() + 1.0
         val command = commandTemplate.replace("{time}", beginBeats.toString())
-        commands.add(Command(beginTime, CommandType.Message, command))
+        commands.add(Message(beginTime, command))
     }
 
     fun addWait(noteLength: NoteLength) {
         beginTime += noteLength
-        commands.add(Command(beginTime, CommandType.Nothing, ""))
+        commands.add(Nothing(beginTime))
     }
 
-    fun addEvent(triggerEvent: String) {
-        commands.add(Command(beginTime, CommandType.Event, triggerEvent))
+    fun addEvent(triggerEvent: String, parameter: Any) {
+        commands.add(Event(beginTime, triggerEvent, parameter))
     }
 
     fun addChangeLoopVelocity(velocity: Double) {
-        commands.add(Command(beginTime, CommandType.ChangeLoopVelocity, velocity.toString()))
+        commands.add(ChangeLoopVelocity(beginTime, velocity))
     }
 
     fun processBitUpdate(bit: Int): Int {
@@ -42,20 +49,21 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
             return 0
         }
         var processedNum = 0
-        var topCommand: Command? = commands[0]
+        var topCommand: Command? = commands.first()
 
-        while (topCommand != null &&
-                topCommand.beginOfCommand >= bit.beat()
+        while (topCommand != null
                 && topCommand.beginOfCommand < (bit + 1).beat()) {
-            commands.removeAt(0)
+            commands.remove(topCommand)
             processedNum++
-            when (topCommand.type) {
-                CommandType.Message -> commandQueue.offer(topCommand.command)
-                CommandType.Event -> MusicPhraseRunners.processEvent(topCommand.command, topCommand.beginOfCommand)
-                CommandType.ChangeLoopVelocity -> loopVelocity = topCommand.command.toDouble()
-                CommandType.Nothing -> {}
+            if (topCommand.beginOfCommand >= bit.beat()) {
+            when (topCommand) {
+                is Message -> commandQueue.offer(topCommand.command)
+                is Event -> MusicPhraseRunners.processEvent(topCommand)
+                is ChangeLoopVelocity -> loopVelocity = topCommand.velocity
+                is  Nothing -> {}
             }
-            if (commands.isNotEmpty()) topCommand = commands[0]
+            }
+            if (commands.isNotEmpty()) topCommand = commands.first()
             else topCommand = null
         }
         return processedNum
@@ -82,7 +90,7 @@ object MusicPhraseRunners {
         val context = LoopContext("pulse", events = listOf("loop_pulse"))
         val block = makeLoop {
             while (eventsQueue.isNotEmpty()) {
-                processEvent(eventsQueue.poll(), getMusicPhrase(context).beginTime)
+                processEvent(Event(getMusicPhrase(context).beginTime, eventsQueue.poll(), Any()))
             }
             silence(pulsePeriod)
         }
@@ -112,13 +120,13 @@ object MusicPhraseRunners {
         }
     }
 
-
     //called from music loop only
     @Synchronized
-    fun processEvent(eventName: String, newBeginTime: NoteLength) {
-        eventsListeners[eventName]?.forEach {
-            it.beginTime = newBeginTime
-            it.commands.clear()
+    fun processEvent(event: Event) {
+        eventsListeners[event.event]?.forEach {
+            it.beginTime = event.beginOfCommand
+            it.context.parameter = event.parameter
+            it.context.trigger = event.event
             it.runCommands()
         }
     }
@@ -127,6 +135,6 @@ object MusicPhraseRunners {
 fun makeLoop(block: LoopContext.() -> Unit) : LoopContext.() -> Unit {
     return fun LoopContext.() {
         block.invoke(this)
-        MusicPhraseRunners.getMusicPhrase(this).addEvent("loop_$loopName")
+        MusicPhraseRunners.getMusicPhrase(this).addEvent("loop_$loopName", Any())
     }
 }
