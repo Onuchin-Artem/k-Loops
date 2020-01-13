@@ -61,14 +61,14 @@ val chords = mapOf(
         "halfdim" to listOf(0, 3, 6, 10),
         "m7-5" to listOf(0, 3, 6, 10)
 )
-
-fun Any.toNote(): Int = when (this) {
-    (this is String && noteRegex.matches(this)) -> toNote(this.toString())
-    is Int -> this
-    else -> throw IllegalArgumentException("not a note $this")
-}
-
 val noteRegex = "([abcdefg]#?)(-[12]|[0-8])".toRegex(RegexOption.IGNORE_CASE)
+
+fun Any.toNote(): Int =
+    if (this is String && noteRegex.matches(this)) toNote(this.toString())
+    else if (this is Int) this
+    else throw IllegalArgumentException("not a note $this")
+
+
 
 fun toNote(midiNote: String): Int {
         val groups = noteRegex.matchEntire(midiNote)!!.groupValues
@@ -94,10 +94,14 @@ fun toNote(midiNote: String): Int {
 
 operator fun List<Int>.plus(value: Int) = this.map { it + value }
 operator fun Int.plus(value: List<Int>) = value + this
-fun List<Int>.invert(invert: Int) = this.mapIndexed { note, i -> if (i < invert) note + 12 else note }.sortedBy {  }
-fun List<Int>.spread(octaves: Int) = this.mapIndexed { note, i -> note + 12 * i }
+fun List<Int>.invert(invert: Int) = this.mapIndexed { i, note -> if (i < invert) note + 12 else note }.sortedBy { it }
+fun List<Int>.spread(octaves: Int = 1) = this.mapIndexed { i, note -> note + 12 * i  * octaves }
 fun List<Int>.repeat(octaves: Int) = (0 until octaves).flatMap { this + 12 * it }
 
 
 fun chord(note: Any, chord: String) = (chords[chord] ?: error("Chord $chord is not defined!")) + note.toNote()
 
+typealias Chord = List<Int>
+typealias Note = Int
+
+val octave = 12

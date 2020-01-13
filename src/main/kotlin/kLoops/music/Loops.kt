@@ -5,6 +5,7 @@ import kotlin.math.round
 
 open class LoopContext(val loopName: String, val events: List<String>) {
     constructor(context: LoopContext) : this(context.loopName, context.events)
+
     var trigger: String = ""
     var parameter: Any = Any()
 
@@ -23,7 +24,7 @@ open class LoopContext(val loopName: String, val events: List<String>) {
     fun <T> List<T>.tick(tickId: String = globalCounter): T = this[Counters.tick("$loopName/$tickId") % this.size]
     fun <T> List<T>.look(tickId: String = globalCounter): T = this[Counters.look("$loopName/$tickId") % this.size]
 
-    open inner class Generator(compute: (stepInPeriod: Int) -> Double = {0.0}) {
+    open inner class Generator(compute: (stepInPeriod: Int) -> Double = { 0.0 }) {
 
         protected open val compute: (stepInPeriod: Int) -> Double = compute
 
@@ -37,11 +38,11 @@ open class LoopContext(val loopName: String, val events: List<String>) {
     }
 
     inner class LFO(
-            private val from: Double, private val to:Double,
+            private val from: Double, private val to: Double,
             private val period: Int, private val phase: Double,
             private val jitter: Double,
             private val computeLfo: (stepInPeriod: Int) -> Double) : Generator() {
-         override val compute: (stepInPeriod: Int) -> Double = this::doCompute
+        override val compute: (stepInPeriod: Int) -> Double = this::doCompute
 
         private fun doCompute(step: Int): Double {
             val zeroToOne = computeLfo((step + round(phase * period).toInt()) % period)
@@ -53,16 +54,20 @@ open class LoopContext(val loopName: String, val events: List<String>) {
         checkRatio("velocity", velocity)
         MusicPhraseRunners.getMusicPhrase(this).addChangeLoopVelocity(velocity)
     }
+
     fun setLoopVelocity(gen: Generator) = setLoopVelocity(gen.look())
 
-
-        fun silence(length: NoteLength) {
+    fun silence(length: NoteLength) =
         MusicPhraseRunners.getMusicPhrase(this).addWait(length)
-    }
 
-    fun triggerEvent(event: String, parameter: Any = Any()) {
+    fun triggerEvent(event: String, parameter: Any = Any()) =
         MusicPhraseRunners.getMusicPhrase(this).addEvent(event, parameter)
-    }
+
+    fun broadcastParameter(parameter: String, value: Any) =
+        MusicPhraseRunners.getMusicPhrase(this).addBroadcastParameter(parameter, value)
+
+    fun receiveParameter(parameter: String) =
+            MusicPhraseRunners.readParameter(parameter)
 
     fun Parameter.setValue(value: Double) {
         checkRatio("value", value)
@@ -80,5 +85,5 @@ open class TrackWrapper(val context: LoopContext, val track: Track) {
     fun volume() = track.parameter("volume")
     fun parameter(parameter: String): Parameter = track.mainDevice?.parameter(parameter)!!
     fun sends(returnTrack: String) = track.parameter(returnTrack)
-    fun device(device: String)  = track.device(device)
+    fun device(device: String) = track.device(device)
 }

@@ -18,6 +18,8 @@ data class Message(override val beginOfCommand: NoteLength, val command: String)
 data class Event(override val beginOfCommand: NoteLength, val event: String, val parameter: Any): Command()
 data class Nothing(override val beginOfCommand: NoteLength) : Command()
 data class ChangeLoopVelocity(override val beginOfCommand: NoteLength, val velocity: Double): Command()
+data class BroadcastParameter(override val beginOfCommand: NoteLength, val parameter: String, val value: Any): Command()
+
 
 class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> Unit) {
     private val commands = sortedSetOf<Command>()
@@ -43,6 +45,10 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
         commands.add(ChangeLoopVelocity(beginTime, velocity))
     }
 
+    fun addBroadcastParameter(parameter: String, value: Any) {
+        commands.add(BroadcastParameter(beginTime, parameter, value))
+    }
+
     fun processBitUpdate(bit: Int): Int {
 
         if (commands.isEmpty()) {
@@ -60,6 +66,7 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
                 is Message -> commandQueue.offer(topCommand.command)
                 is Event -> MusicPhraseRunners.processEvent(topCommand)
                 is ChangeLoopVelocity -> loopVelocity = topCommand.velocity
+                is BroadcastParameter -> MusicPhraseRunners.broadcastParameter(topCommand.parameter, topCommand.value)
                 is  Nothing -> {}
             }
             }
@@ -85,6 +92,7 @@ val eventsQueue = ArrayBlockingQueue<String>(1024)
 object MusicPhraseRunners {
     private val runnersMap = mutableMapOf<String, MusicPhraseRunner>()
     private val eventsListeners = mutableMapOf<String, MutableSet<MusicPhraseRunner>>()
+    private val broadcastedParameters = mutableMapOf<String, Any>()
 
     init {
         val context = LoopContext("pulse", events = listOf("loop_pulse"))
@@ -129,6 +137,14 @@ object MusicPhraseRunners {
             it.context.trigger = event.event
             it.runCommands()
         }
+    }
+
+    @Synchronized
+    fun readParameter(field: String) = broadcastedParameters[field]
+
+    @Synchronized
+    fun broadcastParameter(field: String, value: Any) {
+        broadcastedParameters[field] = value
     }
 }
 
