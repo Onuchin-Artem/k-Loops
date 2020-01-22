@@ -55,6 +55,12 @@ open class LoopContext(val loopName: String, val events: List<String>) {
         MusicPhraseRunners.getMusicPhrase(this).addChangeLoopVelocity(velocity)
     }
 
+    fun setLoopVelocity(loop: String, velocity: Double) {
+        checkRatio("velocity", velocity)
+        MusicPhraseRunners.getMusicPhrase(this).addChangeLoopVelocity(loop, velocity)
+    }
+    fun setLoopVelocity(loop: String, gen: Generator) = setLoopVelocity(loop, gen.look())
+
     fun setLoopVelocity(gen: Generator) = setLoopVelocity(gen.look())
 
     fun silence(length: NoteLength) =
@@ -66,8 +72,16 @@ open class LoopContext(val loopName: String, val events: List<String>) {
     fun broadcastParameter(parameter: String, value: Any) =
         MusicPhraseRunners.getMusicPhrase(this).addBroadcastParameter(parameter, value)
 
-    fun receiveParameter(parameter: String) =
-            MusicPhraseRunners.readParameter(parameter)
+    fun <T> receiveParameter(parameterValue: String, block: LoopContext.(parameter: T) -> Unit) {
+        val parameter = MusicPhraseRunners.readParameter(parameterValue) as T?
+        if (parameter != null) {
+            this.block(parameter)
+        }
+    }
+
+    fun <T> receiveTriggerParameter(block: LoopContext.(parameter: T) -> Unit) {
+        this.block(parameter as T)
+    }
 
     fun Parameter.setValue(value: Double) {
         checkRatio("value", value)

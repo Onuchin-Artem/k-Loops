@@ -17,7 +17,7 @@ sealed class Command : Comparable<Command> {
 data class Message(override val beginOfCommand: NoteLength, val command: String): Command()
 data class Event(override val beginOfCommand: NoteLength, val event: String, val parameter: Any): Command()
 data class Nothing(override val beginOfCommand: NoteLength) : Command()
-data class ChangeLoopVelocity(override val beginOfCommand: NoteLength, val velocity: Double): Command()
+data class ChangeLoopVelocity(override val beginOfCommand: NoteLength, val loop: String, val velocity: Double): Command()
 data class BroadcastParameter(override val beginOfCommand: NoteLength, val parameter: String, val value: Any): Command()
 
 
@@ -42,8 +42,13 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
     }
 
     fun addChangeLoopVelocity(velocity: Double) {
-        commands.add(ChangeLoopVelocity(beginTime, velocity))
+        commands.add(ChangeLoopVelocity(beginTime, context.loopName, velocity))
     }
+
+    fun addChangeLoopVelocity(loop: String, velocity: Double) {
+        commands.add(ChangeLoopVelocity(beginTime, loop, velocity))
+    }
+
 
     fun addBroadcastParameter(parameter: String, value: Any) {
         commands.add(BroadcastParameter(beginTime, parameter, value))
@@ -65,7 +70,7 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
             when (topCommand) {
                 is Message -> commandQueue.offer(topCommand.command)
                 is Event -> MusicPhraseRunners.processEvent(topCommand)
-                is ChangeLoopVelocity -> loopVelocity = topCommand.velocity
+                is ChangeLoopVelocity -> MusicPhraseRunners.getMusicPhrase(topCommand.loop).loopVelocity = topCommand.velocity
                 is BroadcastParameter -> MusicPhraseRunners.broadcastParameter(topCommand.parameter, topCommand.value)
                 is  Nothing -> {}
             }
@@ -116,6 +121,9 @@ object MusicPhraseRunners {
     //called from music loop only
     @Synchronized
     fun getMusicPhrase(context: LoopContext): MusicPhraseRunner = runnersMap[context.loopName]!!
+
+    @Synchronized
+    fun getMusicPhrase(loopName: String): MusicPhraseRunner = runnersMap[loopName]!!
 
     @Synchronized
     fun registerEventListener(context: LoopContext, block: LoopContext.() -> Unit) {
