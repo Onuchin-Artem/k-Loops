@@ -68,7 +68,8 @@ fun stateRequestLoop() {
     }
 }
 
-@Volatile var bar = 0
+@Volatile
+var bar = 0
 
 fun musicLoop() {
     while (true) {

@@ -71,7 +71,7 @@ fun main() {
     loop("drone") {
         receiveParameter<Note>("root") {
             silence(1 o 8)
-            var chord = chord(it  + octave, "m9")
+            var chord = chord(it + octave, "m9")
             if (1 in 2) chord = chord.invert(1)
             if (1 in 2) chord = chord.invert(2)
 

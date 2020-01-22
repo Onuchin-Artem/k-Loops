@@ -6,7 +6,8 @@ import kotlin.concurrent.thread
 
 var listOfThreads: List<Thread>? = null
 
-@Synchronized fun startBackgroundTasks(): List<Thread> {
+@Synchronized
+fun startBackgroundTasks(): List<Thread> {
     if (listOfThreads != null) {
         return listOfThreads!!
     }
@@ -18,7 +19,9 @@ var listOfThreads: List<Thread>? = null
             thread { musicLoop() })
     return listOfThreads!!
 }
-@Synchronized fun reset() {
+
+@Synchronized
+fun reset() {
     if (listOfThreads == null) return
     listOfThreads!!.forEach { it.stop() }
     listOfThreads = null
@@ -31,7 +34,7 @@ fun loop(loopName: String, block: LoopContext.() -> Unit) {
     triggerEventNextPulse("loop_$loopName")
 }
 
-fun runWhenEvent(loopName: String, triggerEvents: List<String>,  block: LoopContext.() -> Unit) {
+fun runWhenEvent(loopName: String, triggerEvents: List<String>, block: LoopContext.() -> Unit) {
     val context = LoopContext(loopName, triggerEvents)
     MusicPhraseRunners.registerEventListener(context, block)
 }

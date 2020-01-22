@@ -14,7 +14,7 @@ fun main() {
 
     runWhenEvent("bass", triggerEvents = listOf("a")) {
         silence(_8th)
-        track("bass").play("a0", _8th, listOf(0.5, 1.0).tick() )
+        track("bass").play("a0", _8th, listOf(0.5, 1.0).tick())
     }
 
     runWhenEvent("snare", triggerEvents = listOf("b")) {
@@ -30,11 +30,11 @@ fun main() {
 
     runWhenEvent("hat_random", triggerEvents = listOf("e")) {
         track("drums").play("hihat", _16th.t(), 0.4)
-         if (1 in 3) triggerEvent("e")
+        if (1 in 3) triggerEvent("e")
     }
 
     runWhenEvent("keys", triggerEvents = listOf("d")) {
-        listOf("a4", "d3", "c5").forEach { note -> track("keys").play(note, _4th, 0.5)}
+        listOf("a4", "d3", "c5").forEach { note -> track("keys").play(note, _4th, 0.5) }
     }
 
     triggerEventNextPulse("a")

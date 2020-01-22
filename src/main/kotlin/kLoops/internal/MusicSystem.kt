@@ -8,17 +8,18 @@ import java.util.concurrent.ArrayBlockingQueue
 
 sealed class Command : Comparable<Command> {
     abstract val beginOfCommand: NoteLength;
-    override operator fun compareTo(other: Command):Int =
+    override operator fun compareTo(other: Command): Int =
             compareBy(Command::beginOfCommand)
                     .thenComparing(compareBy(Command::toString))
                     .compare(this, other)
 
 }
-data class Message(override val beginOfCommand: NoteLength, val command: String): Command()
-data class Event(override val beginOfCommand: NoteLength, val event: String, val parameter: Any): Command()
+
+data class Message(override val beginOfCommand: NoteLength, val command: String) : Command()
+data class Event(override val beginOfCommand: NoteLength, val event: String, val parameter: Any) : Command()
 data class Nothing(override val beginOfCommand: NoteLength) : Command()
-data class ChangeLoopVelocity(override val beginOfCommand: NoteLength, val loop: String, val velocity: Double): Command()
-data class BroadcastParameter(override val beginOfCommand: NoteLength, val parameter: String, val value: Any): Command()
+data class ChangeLoopVelocity(override val beginOfCommand: NoteLength, val loop: String, val velocity: Double) : Command()
+data class BroadcastParameter(override val beginOfCommand: NoteLength, val parameter: String, val value: Any) : Command()
 
 
 class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> Unit) {
@@ -67,13 +68,14 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
             commands.remove(topCommand)
             processedNum++
             if (topCommand.beginOfCommand >= bit.beat()) {
-            when (topCommand) {
-                is Message -> commandQueue.offer(topCommand.command)
-                is Event -> MusicPhraseRunners.processEvent(topCommand)
-                is ChangeLoopVelocity -> MusicPhraseRunners.getMusicPhrase(topCommand.loop).loopVelocity = topCommand.velocity
-                is BroadcastParameter -> MusicPhraseRunners.broadcastParameter(topCommand.parameter, topCommand.value)
-                is  Nothing -> {}
-            }
+                when (topCommand) {
+                    is Message -> commandQueue.offer(topCommand.command)
+                    is Event -> MusicPhraseRunners.processEvent(topCommand)
+                    is ChangeLoopVelocity -> MusicPhraseRunners.getMusicPhrase(topCommand.loop).loopVelocity = topCommand.velocity
+                    is BroadcastParameter -> MusicPhraseRunners.broadcastParameter(topCommand.parameter, topCommand.value)
+                    is Nothing -> {
+                    }
+                }
             }
             if (commands.isNotEmpty()) topCommand = commands.first()
             else topCommand = null
@@ -92,7 +94,8 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
 }
 
 val eventsQueue = ArrayBlockingQueue<String>(1024)
-@Volatile var pulsePeriod = 4 o 4
+@Volatile
+var pulsePeriod = 4 o 4
 
 object MusicPhraseRunners {
     private val runnersMap = mutableMapOf<String, MusicPhraseRunner>()
@@ -110,6 +113,7 @@ object MusicPhraseRunners {
         registerEventListener(context, block)
         getMusicPhrase(context).runCommands()
     }
+
     //called from music loop only
     @Synchronized
     fun processBitUpdate(bit: Int) {
@@ -156,7 +160,7 @@ object MusicPhraseRunners {
     }
 }
 
-fun makeLoop(block: LoopContext.() -> Unit) : LoopContext.() -> Unit {
+fun makeLoop(block: LoopContext.() -> Unit): LoopContext.() -> Unit {
     return fun LoopContext.() {
         block.invoke(this)
         MusicPhraseRunners.getMusicPhrase(this).addEvent("loop_$loopName", Any())

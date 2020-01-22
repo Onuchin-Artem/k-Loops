@@ -33,7 +33,7 @@ data class State(
 
 data class DrumPad(val name: String, val id: Int, val note: Int)
 
-interface HasParameters{
+interface HasParameters {
     fun device(device: String): HasParameters
     fun parameter(parameter: String): Parameter
 }
@@ -67,6 +67,7 @@ data class Track(
 
     override fun device(device: String): HasParameters =
             devicesSearch.findOrElse(device) { throw IllegalArgumentException("No device $device") }
+
     override fun parameter(parameter: String) =
             mixParametersSearch.findOrElse(parameter) { throw IllegalArgumentException("No device $parameter") }
 }
@@ -88,13 +89,13 @@ data class Device(
 
     override fun device(device: String): HasParameters =
             devicesSearch.findOrElse(device) { throw IllegalArgumentException("No device $device") }
+
     override fun parameter(parameter: String) =
             mixParametersSearch.findOrElse(parameter) { throw IllegalArgumentException("No device $parameter") }
 
 }
 
 data class Parameter(val name: String, val id: Int)
-
 
 
 fun parseState(json: String): State {
@@ -138,7 +139,7 @@ fun parseDevice(jsonObj: JsonObject) = Device(
         id = jsonObj["id"].asInt,
         name = jsonObj["title"].asString,
         parameters = parseParameters(jsonObj["parameters"].asJsonArray),
-        drumpads = jsonObj["drumpads"].asJsonArray.map { parseDrumpad(it.asJsonObject)},
+        drumpads = jsonObj["drumpads"].asJsonArray.map { parseDrumpad(it.asJsonObject) },
         devices = parseDevices(jsonObj),
         isInstrument = jsonObj["type"].asInt == 1)
 

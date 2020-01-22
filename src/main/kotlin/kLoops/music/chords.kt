@@ -64,38 +64,37 @@ val chords = mapOf(
 val noteRegex = "([abcdefg]#?)(-[12]|[0-8])".toRegex(RegexOption.IGNORE_CASE)
 
 fun Any.toNote(): Int =
-    if (this is String && noteRegex.matches(this)) toNote(this.toString())
-    else if (this is Int) this
-    else throw IllegalArgumentException("not a note $this")
-
+        if (this is String && noteRegex.matches(this)) toNote(this.toString())
+        else if (this is Int) this
+        else throw IllegalArgumentException("not a note $this")
 
 
 fun toNote(midiNote: String): Int {
-        val groups = noteRegex.matchEntire(midiNote)!!.groupValues
-        val note = groups[1]
-        val octave = groups[2].toInt()
-        val noteInt = when (note) {
-            "c" -> 0
-            "c#" -> 1
-            "d" -> 2
-            "d#" -> 3
-            "e" -> 4
-            "f" -> 5
-            "f#" -> 6
-            "g" -> 7
-            "g#" -> 8
-            "a" -> 9
-            "a#" -> 10
-            "b" -> 11
-            else -> throw IllegalArgumentException("Non-existent note: $note")
-        }
-        return 24 + octave * 12 + noteInt
+    val groups = noteRegex.matchEntire(midiNote)!!.groupValues
+    val note = groups[1]
+    val octave = groups[2].toInt()
+    val noteInt = when (note) {
+        "c" -> 0
+        "c#" -> 1
+        "d" -> 2
+        "d#" -> 3
+        "e" -> 4
+        "f" -> 5
+        "f#" -> 6
+        "g" -> 7
+        "g#" -> 8
+        "a" -> 9
+        "a#" -> 10
+        "b" -> 11
+        else -> throw IllegalArgumentException("Non-existent note: $note")
+    }
+    return 24 + octave * 12 + noteInt
 }
 
 operator fun List<Int>.plus(value: Int) = this.map { it + value }
 operator fun Int.plus(value: List<Int>) = value + this
 fun List<Int>.invert(invert: Int) = this.mapIndexed { i, note -> if (i < invert) note + 12 else note }.sortedBy { it }
-fun List<Int>.spread(octaves: Int = 1) = this.mapIndexed { i, note -> note + 12 * i  * octaves }
+fun List<Int>.spread(octaves: Int = 1) = this.mapIndexed { i, note -> note + 12 * i * octaves }
 fun List<Int>.repeat(octaves: Int) = (0 until octaves).flatMap { this + 12 * it }
 
 

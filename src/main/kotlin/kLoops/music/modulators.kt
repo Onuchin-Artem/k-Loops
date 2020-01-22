@@ -31,6 +31,7 @@ fun LoopContext.trapezoid(
         else 0.0
     }
 }
+
 fun LoopContext.triag(
         from: Double = 0.0, to: Double = 1.0,
         period: Int, t1: Int = period / 2,
@@ -41,7 +42,7 @@ fun LoopContext.rect(
         from: Double = 0.0, to: Double = 1.0,
         period: Int, t1: Int = period / 2,
         phase: Double = 0.0, jitter: Double = 0.0) =
-        trapezoid(from, to, period, t1=0, t2 = t1, t3 = t1, phase = phase, jitter = jitter)
+        trapezoid(from, to, period, t1 = 0, t2 = t1, t3 = t1, phase = phase, jitter = jitter)
 
 fun LoopContext.sine(
         from: Double = 0.0, to: Double = 1.0, period: Int,

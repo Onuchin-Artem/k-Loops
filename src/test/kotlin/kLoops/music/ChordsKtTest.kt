@@ -1,8 +1,7 @@
 package kLoops.music
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
-
-import org.junit.Assert.*
 
 class ChordsKtTest {
     @Test

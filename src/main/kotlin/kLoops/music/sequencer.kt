@@ -8,7 +8,7 @@ fun LoopContext.sequencer(stepLength: NoteLength, id: String = globalCounter, bl
         silence(stepLength)
         Counters.tick("${loopName}/$id")
         i++
-    } while(i < seqContext.largestLoopSize)
+    } while (i < seqContext.largestLoopSize)
 }
 
 class SequenceContext(
@@ -27,4 +27,4 @@ class SequenceContext(
 
     fun String.play(track: MidiTrackWrapper, velocity: Double, length: NoteLength = stepLength) =
             this.toSeq().play(track, velocity, length)
-    }
+}

@@ -26,7 +26,7 @@ fun randomNoteLength() = (1 + (Math.random() * 1023).toInt()) o 1024
 
 fun Double.toNoteLength() = (round(1024 * this).toInt() o 1024).simplify()
 
-data class NoteLength(val nominator: Int, val denominator: Int): Comparable<NoteLength> {
+data class NoteLength(val nominator: Int, val denominator: Int) : Comparable<NoteLength> {
     init {
         check(nominator >= 0) { "nominator must be non-negative but was $nominator" }
         check(denominator > 0) { "denominator must be positive but was $denominator" }
