@@ -61,7 +61,7 @@ val chords = mapOf(
         "halfdim" to listOf(0, 3, 6, 10),
         "m7-5" to listOf(0, 3, 6, 10)
 )
-val noteRegex = "([abcdefg]#?)(-[12]|[0-8])".toRegex(RegexOption.IGNORE_CASE)
+val noteRegex = "(([abcdefg]#?)(-[12]|[0-8])|(\\d{1,3}))".toRegex(RegexOption.IGNORE_CASE)
 
 fun Any.toNote(): Int =
         if (this is String && noteRegex.matches(this)) toNote(this.toString())
@@ -71,8 +71,11 @@ fun Any.toNote(): Int =
 
 fun toNote(midiNote: String): Int {
     val groups = noteRegex.matchEntire(midiNote)!!.groupValues
-    val note = groups[1]
-    val octave = groups[2].toInt()
+    if (groups[4] != "") {
+        return midiNote.toInt()
+    }
+    val note = groups[2]
+    val octave = groups[3].toInt()
     val noteInt = when (note) {
         "c" -> 0
         "c#" -> 1

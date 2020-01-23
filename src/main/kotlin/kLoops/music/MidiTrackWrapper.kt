@@ -15,17 +15,18 @@ class MidiTrackWrapper(context: LoopContext, track: Track) : TrackWrapper(contex
         return "${track.id} add {time} note $note $midiVelocity $lengthMillis"
     }
 
-    fun playAsync(note: Any, length: NoteLength, velocity: Double) {
+    fun playAsync(note: Any, length: NoteLength, velocity: Double = 1.0) {
         if (note.toString() == ".") return
-        val commandTemplate = playCommandTemplate(note.toNote(), length, velocity) ?: return
+        val commandTemplate = playCommandTemplate(note.toNoteOrDrum(), length, velocity) ?: return
         MusicPhraseRunners.getMusicPhrase(context).addCommand(commandTemplate)
     }
 
-    fun Any.toNote(): Int = when (this) {
+    private fun Any.toNoteOrDrum(): Int = when (this) {
         is String -> {
             if (noteRegex.matches(this)) toNote(this)
             else toDrum(this)
         }
+        is Char -> this.toString().toNoteOrDrum()
         is Int -> this
         else -> throw IllegalArgumentException("not a note $this")
     }

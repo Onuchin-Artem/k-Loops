@@ -91,6 +91,22 @@ open class LoopContext(val loopName: String, val events: List<String>) {
     }
 
     fun Parameter.setValue(generator: Generator) = setValue(generator.look())
+
+    fun sq(vararg notes: String) = notes.joinToString(" ")
+    fun rnd(vararg notes: String) = notes.toList().random()
+    fun rnd(vararg notesWithChances: Pair<Int, String>) =
+         notesWithChances.flatMap { pair -> (1..pair.first).map{ pair.second } }.random()
+    fun nxt(vararg notes: String) = notes.toList().tick("nxt-${notes.joinToString("/")}")
+    fun nxt(vararg notesWithRepeats: Pair<Int, String>) =
+            notesWithRepeats.flatMap { pair -> (1..pair.first).map{ pair.second } }
+                    .tick("nxt-${notesWithRepeats.joinToString("/")}")
+    operator fun String.times(repeats: Int) = (1..repeats).joinToString(" ") { this }
+
+    fun euclideanRythm(onsets: Int, pulses: Int, pulseLength: NoteLength, asyncBlock : LoopContext.() -> Unit) =
+            euclideanRythm(onsets, pulses).forEach {
+                if (it) this.asyncBlock()
+                silence(pulseLength)
+            }
 }
 
 

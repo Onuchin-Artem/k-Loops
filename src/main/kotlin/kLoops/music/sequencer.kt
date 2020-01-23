@@ -28,3 +28,16 @@ class SequenceContext(
     fun String.play(track: MidiTrackWrapper, velocity: Double, length: NoteLength = stepLength) =
             this.toSeq().play(track, velocity, length)
 }
+
+fun euclideanRythm(onsets: Int, pulses: Int) : List<Boolean> {
+    val spread = pulses.toDouble() / onsets.toDouble()
+    val resultArray = MutableList(pulses) { false }
+    (0 until onsets)
+            .map { (it * spread).toInt() }
+            .forEach { resultArray[it] = true }
+    return resultArray.toList()
+}
+
+fun euclideanRythm(onsets: Int, pulses: Int, onsetNote: String) =
+        euclideanRythm(onsets, pulses).map { if (it) onsetNote else "." }.joinToString(" ")
+
