@@ -8,6 +8,7 @@ open class LoopContext(val loopName: String, val events: List<String>) {
 
     var trigger: String = ""
     var parameter: Any = Any()
+    var tickCounter = 0
 
     fun track(name: String): MidiTrackWrapper {
         return MidiTrackWrapper(this, Live.state().lookupTrackId(name))
@@ -64,7 +65,7 @@ open class LoopContext(val loopName: String, val events: List<String>) {
 
     fun setLoopVelocity(gen: Generator) = setLoopVelocity(gen.look())
 
-    fun silence(length: NoteLength) =
+    fun silence(length: Rational) =
             MusicPhraseRunners.getMusicPhrase(this).addWait(length)
 
     fun triggerEvent(event: String, parameter: Any = Any()) =
@@ -92,21 +93,26 @@ open class LoopContext(val loopName: String, val events: List<String>) {
 
     fun Parameter.setValue(generator: Generator) = setValue(generator.look())
 
-    fun sq(vararg notes: String) = notes.joinToString(" ")
-    fun rnd(vararg notes: String) = notes.toList().random()
-    fun rnd(vararg notesWithChances: Pair<Int, String>) =
-         notesWithChances.flatMap { pair -> (1..pair.first).map{ pair.second } }.random()
-    fun nxt(vararg notes: String) = notes.toList().tick("nxt-${notes.joinToString("/")}")
+    fun nxt(vararg notes: String): String {
+        val returnNotes = notes.toList().tick("nxt-${tickCounter++}")
+        println(" $returnNotes")
+        return returnNotes
+    }
+
     fun nxt(vararg notesWithRepeats: Pair<Int, String>) =
             notesWithRepeats.flatMap { pair -> (1..pair.first).map{ pair.second } }
-                    .tick("nxt-${notesWithRepeats.joinToString("/")}")
-    operator fun String.times(repeats: Int) = (1..repeats).joinToString(" ") { this }
+                    .tick("nxt-${tickCounter++}")
 
-    fun euclideanRythm(onsets: Int, pulses: Int, pulseLength: NoteLength, asyncBlock : LoopContext.() -> Unit) =
+    fun euclideanRythm(onsets: Int, pulses: Int, pulseLength: Rational, asyncBlock : LoopContext.() -> Unit) =
             euclideanRythm(onsets, pulses).forEach {
                 if (it) this.asyncBlock()
                 silence(pulseLength)
             }
+
+    fun beginOfLoop() {
+        println("Loop Begin")
+        tickCounter = 0
+    }
 }
 
 

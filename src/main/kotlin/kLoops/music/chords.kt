@@ -1,6 +1,6 @@
 package kLoops.music
 
-val chords = mapOf(
+val chords =  mapOf(
         "5" to listOf(0, 7),
         "+5" to listOf(0, 4, 8),
         "m+5" to listOf(0, 3, 8),
@@ -61,18 +61,31 @@ val chords = mapOf(
         "halfdim" to listOf(0, 3, 6, 10),
         "m7-5" to listOf(0, 3, 6, 10)
 )
-val noteRegex = "(([abcdefg]#?)(-[12]|[0-8])|(\\d{1,3}))".toRegex(RegexOption.IGNORE_CASE)
 
-fun Any.toNote(): Int =
-        if (this is String && noteRegex.matches(this)) toNote(this.toString())
-        else if (this is Int) this
-        else throw IllegalArgumentException("not a note $this")
+val noteRegex = "([^:]+):(\\d+|\\d+/\\d+):([01]\\.\\d+)".toRegex()
+val musicalNoteRegex = "(([abcdefg]#?)(-[12]|[0-8])|(\\d{1,3}))".toRegex(RegexOption.IGNORE_CASE)
 
+fun Any.toNote(): Note =
+        when {
+            (this is String && noteRegex.matches(this)) -> parseNote(this.toString()) { it.toNote() }
+            (this is String && musicalNoteRegex.matches(this)) -> toNote(this.toString())
+            (this is Int) -> Note(this)
+            (this is Note) -> this
+            else -> throw IllegalArgumentException("not a note $this")
+        }
 
-fun toNote(midiNote: String): Int {
-    val groups = noteRegex.matchEntire(midiNote)!!.groupValues
+fun parseNote(str: String, midiNoteParser: (String) -> Note): Note {
+    check(noteRegex.matches(str))
+    val groups = noteRegex.matchEntire(str)!!.groupValues
+    return midiNoteParser(groups[1])
+            .copy(lengthRescale = groups[2].toRational(), velocity = groups[3].toDouble())
+}
+
+fun toNote(midiNote: String): Note {
+
+    val groups = musicalNoteRegex.matchEntire(midiNote)!!.groupValues
     if (groups[4] != "") {
-        return midiNote.toInt()
+        return Note(midiNote.toInt())
     }
     val note = groups[2]
     val octave = groups[3].toInt()
@@ -91,19 +104,28 @@ fun toNote(midiNote: String): Int {
         "b" -> 11
         else -> throw IllegalArgumentException("Non-existent note: $note")
     }
-    return 24 + octave * 12 + noteInt
+    return Note(24 + octave * 12 + noteInt)
 }
 
-operator fun List<Int>.plus(value: Int) = this.map { it + value }
-operator fun Int.plus(value: List<Int>) = value + this
-fun List<Int>.invert(invert: Int) = this.mapIndexed { i, note -> if (i < invert) note + 12 else note }.sortedBy { it }
-fun List<Int>.spread(octaves: Int = 1) = this.mapIndexed { i, note -> note + 12 * i * octaves }
-fun List<Int>.repeat(octaves: Int) = (0 until octaves).flatMap { this + 12 * it }
+fun Note.toDouble(): Double = this.note.toDouble()
 
+data class Note(val note: Int, val lengthRescale: Rational = 1 o 1, val velocity: Double = 1.0) : Comparable<Note> {
+    override fun compareTo(other: Note) = this.note.compareTo(other.note)
+}
+typealias Chord = List<Note>
 
-fun chord(note: Any, chord: String) = (chords[chord] ?: error("Chord $chord is not defined!")) + note.toNote()
+operator fun Note.plus(value: Int) = Note(this.note + value)
+operator fun Note.minus(value: Int) = this + -value
 
-typealias Chord = List<Int>
-typealias Note = Int
+operator fun List<Note>.plus(value: Int) = this.map { it + value }
+operator fun List<Note>.minus(value: Int) = this + -value
+operator fun Note.plus(value: List<Note>) = value + this
+
+fun List<Note>.invert(invert: Int) = this.mapIndexed { i, note -> if (i < invert) note + 12 else note }.sortedBy { it }
+fun List<Note>.spread(octaves: Int = 1) = this.mapIndexed { i, note -> note + 12 * i * octaves }
+fun List<Note>.repeat(octaves: Int) = (0 until octaves).flatMap { this + 12 * it }
+
+fun chord(note: Any, chord: String) =
+        (chords[chord]?.map {it.toNote()} ?: error("Chord $chord is not defined!")) + note.toNote().note
 
 val octave = 12

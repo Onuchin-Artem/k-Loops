@@ -67,7 +67,6 @@ fun main() {
         }
     }
 
-
     loop("drone") {
         receiveParameter<Note>("root") {
             silence(1 o 8)
@@ -81,10 +80,6 @@ fun main() {
             silence(sleep o 32)
         }
     }
-
-
-
-
 
     loop("drone2") {
         val lfo = sine("a2".toNote().toDouble(), "d3".toNote().toDouble(), 8)

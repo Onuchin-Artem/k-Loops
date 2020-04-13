@@ -43,6 +43,6 @@ fun triggerEventNextPulse(event: String) {
     eventsQueue.offer(event)
 }
 
-fun setPulsePeriod(length: NoteLength) {
+fun setPulsePeriod(length: Rational) {
     pulsePeriod = length
 }

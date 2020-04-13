@@ -1,6 +1,6 @@
 package kLoops.music
 
-fun LoopContext.sequencer(stepLength: NoteLength, id: String = globalCounter, block: SequenceContext.() -> Unit) {
+fun LoopContext.sequencer(stepLength: Rational, id: String = globalCounter, block: SequenceContext.() -> Unit) {
     val seqContext = SequenceContext(stepLength, this, id)
     var i = 0
     do {
@@ -12,20 +12,20 @@ fun LoopContext.sequencer(stepLength: NoteLength, id: String = globalCounter, bl
 }
 
 class SequenceContext(
-        val stepLength: NoteLength,
+        val stepLength: Rational,
         context: LoopContext,
         val id: String = globalCounter) : LoopContext(context) {
     internal var largestLoopSize = 0
 
-    fun <T : Any> MidiTrackWrapper.playSequence(notes: List<T>, velocity: Double, length: NoteLength = stepLength) {
+    fun <T : Any> MidiTrackWrapper.playSequence(notes: List<T>, velocity: Double, length: Rational = stepLength) {
         largestLoopSize = maxOf(largestLoopSize, notes.size)
         playAsync(notes.look(id), length, velocity)
     }
 
-    fun <T : Any> List<T>.play(track: MidiTrackWrapper, velocity: Double, length: NoteLength = stepLength) =
+    fun <T : Any> List<T>.play(track: MidiTrackWrapper, velocity: Double, length: Rational = stepLength) =
             track.playSequence(this, velocity, length)
 
-    fun String.play(track: MidiTrackWrapper, velocity: Double, length: NoteLength = stepLength) =
+    fun String.play(track: MidiTrackWrapper, velocity: Double, length: Rational = stepLength) =
             this.toSeq().play(track, velocity, length)
 }
 

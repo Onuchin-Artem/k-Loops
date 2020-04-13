@@ -1,13 +1,13 @@
 package kLoops.internal
 
 import kLoops.music.LoopContext
-import kLoops.music.NoteLength
+import kLoops.music.Rational
 import kLoops.music.beat
 import kLoops.music.o
 import java.util.concurrent.ArrayBlockingQueue
 
 sealed class Command : Comparable<Command> {
-    abstract val beginOfCommand: NoteLength;
+    abstract val beginOfCommand: Rational;
     override operator fun compareTo(other: Command): Int =
             compareBy(Command::beginOfCommand)
                     .thenComparing(compareBy(Command::toString))
@@ -15,11 +15,11 @@ sealed class Command : Comparable<Command> {
 
 }
 
-data class Message(override val beginOfCommand: NoteLength, val command: String) : Command()
-data class Event(override val beginOfCommand: NoteLength, val event: String, val parameter: Any) : Command()
-data class Nothing(override val beginOfCommand: NoteLength) : Command()
-data class ChangeLoopVelocity(override val beginOfCommand: NoteLength, val loop: String, val velocity: Double) : Command()
-data class BroadcastParameter(override val beginOfCommand: NoteLength, val parameter: String, val value: Any) : Command()
+data class Message(override val beginOfCommand: Rational, val command: String) : Command()
+data class Event(override val beginOfCommand: Rational, val event: String, val parameter: Any) : Command()
+data class Nothing(override val beginOfCommand: Rational) : Command()
+data class ChangeLoopVelocity(override val beginOfCommand: Rational, val loop: String, val velocity: Double) : Command()
+data class BroadcastParameter(override val beginOfCommand: Rational, val parameter: String, val value: Any) : Command()
 
 
 class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> Unit) {
@@ -33,7 +33,7 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
         commands.add(Message(beginTime, command))
     }
 
-    fun addWait(noteLength: NoteLength) {
+    fun addWait(noteLength: Rational) {
         beginTime += noteLength
         commands.add(Nothing(beginTime))
     }
@@ -84,7 +84,8 @@ class MusicPhraseRunner(val context: LoopContext, val block: LoopContext.() -> U
     }
 
     fun runCommands() {
-        block.invoke(context)
+        context.beginOfLoop()
+        block(context)
     }
 
     override operator fun equals(other: Any?): Boolean =
@@ -162,7 +163,7 @@ object MusicPhraseRunners {
 
 fun makeLoop(block: LoopContext.() -> Unit): LoopContext.() -> Unit {
     return fun LoopContext.() {
-        block.invoke(this)
+        block(this)
         MusicPhraseRunners.getMusicPhrase(this).addEvent("loop_$loopName", Any())
     }
 }

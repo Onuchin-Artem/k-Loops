@@ -6,12 +6,12 @@ import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import kLoops.music.o
-import kLoops.music.toNoteLength
+import kLoops.music.toRational
 import java.util.concurrent.CountDownLatch
 
 data class State(
         val bpm: Int,
-        val signature: kLoops.music.NoteLength,
+        val signature: kLoops.music.Rational,
         val tracks: List<Track>
 ) {
     private val tracksSearch = tracks.map { it.name to it }.toSearch()
@@ -103,7 +103,7 @@ fun parseState(json: String): State {
     val jsonObj = gson.fromJson<JsonObject>(json)
     return State(
             bpm = jsonObj["bpm"].asInt,
-            signature = jsonObj["sig"].asString.toNoteLength(),
+            signature = jsonObj["sig"].asString.toRational(),
             tracks = parseTracks(
                     jsonObj["tracks"].asJsonArray +
                             jsonObj["returns"].asJsonArray +

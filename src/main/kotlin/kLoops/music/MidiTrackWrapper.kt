@@ -6,7 +6,7 @@ import kLoops.internal.checkRatio
 
 class MidiTrackWrapper(context: LoopContext, track: Track) : TrackWrapper(context, track) {
 
-    private fun playCommandTemplate(note: Int, length: NoteLength, velocity: Double): String? {
+    private fun playCommandTemplate(note: Int, length: Rational, velocity: Double): String? {
         val loopVelocity = MusicPhraseRunners.getMusicPhrase(context).loopVelocity
         if (loopVelocity < 0.00000001) return null
         checkRatio("velocity", velocity)
@@ -15,23 +15,28 @@ class MidiTrackWrapper(context: LoopContext, track: Track) : TrackWrapper(contex
         return "${track.id} add {time} note $note $midiVelocity $lengthMillis"
     }
 
-    fun playAsync(note: Any, length: NoteLength, velocity: Double = 1.0) {
+    fun playAsync(note: Any, length: Rational, velocity: Double = 1.0) {
         if (note.toString() == ".") return
-        val commandTemplate = playCommandTemplate(note.toNoteOrDrum(), length, velocity) ?: return
+        val note = note.toNoteOrDrum()
+        val commandTemplate = playCommandTemplate(note.note, length * note.lengthRescale, velocity * note.velocity) ?: return
         MusicPhraseRunners.getMusicPhrase(context).addCommand(commandTemplate)
     }
 
-    private fun Any.toNoteOrDrum(): Int = when (this) {
+    private fun Any.toNoteOrDrum(): Note = when (this) {
         is String -> {
-            if (noteRegex.matches(this)) toNote(this)
-            else toDrum(this)
+            when {
+                noteRegex.matches(this) -> parseNote(this) { it.toNoteOrDrum() }
+                musicalNoteRegex.matches(this) -> toNote(this)
+                else -> toDrum(this)
+            }
         }
         is Char -> this.toString().toNoteOrDrum()
-        is Int -> this
+        is Int -> Note(this)
+        is Note -> this
         else -> throw IllegalArgumentException("not a note $this")
     }
 
-    fun toDrum(drum: String): Int {
+    private fun toDrum(drum: String): Note {
         val drumSynonym = when (drum) {
             "k" -> "kick"
             "bd" -> "kick"
@@ -48,6 +53,22 @@ class MidiTrackWrapper(context: LoopContext, track: Track) : TrackWrapper(contex
             "wd" -> "wood"
             else -> drum
         }
-        return track.lookupDrumNote(drumSynonym).toNote()
+        return Note(track.lookupDrumNote(drumSynonym))
     }
+
+    fun play(note: Any, length: Rational, velocity: Double = 1.0) {
+        playAsync(note, length, velocity)
+        context.silence(length * note.toNoteOrDrum().lengthRescale)
+    }
+
+    fun playChordAsync(chord: List<Any>, length: Rational, velocity: Double = 1.0) {
+        chord.forEach { note -> playAsync(note, length, velocity) }
+    }
+
+    fun playChord(chord: List<Any>, length: Rational, velocity: Double = 1.0) {
+        playChordAsync(chord, length, velocity)
+        context.silence(length * chord[0].toNoteOrDrum().lengthRescale)
+    }
+
+
 }

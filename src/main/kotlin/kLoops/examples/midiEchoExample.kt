@@ -25,7 +25,7 @@ fun main() {
     }
 
     runWhenEvent("echo", "k ch sn".toSeq()) {
-        receiveTriggerParameter<NoteLength> { sleep ->
+        receiveTriggerParameter<Rational> { sleep ->
             val drum = when (trigger) {
                 "k" -> listOf("kick").tick("k")
                 "ch" -> listOf("ride", "ch").tick("ch")
