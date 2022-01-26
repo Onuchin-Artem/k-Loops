@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>k-Loops | Live Coding with Ableton in Kotlin</title>
+
+    <link rel="icon" href="favicon.png" type="image/png"/>
+
+    <link href="https://fonts.googleapis.com/css?family=Reem+Kufi|Roboto:300" rel="stylesheet">
+    <link href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/k-loops-site-icons.css">
+    <link href="css/prism.css" rel="stylesheet" />
+
+</head>
+<body>
+<script src="js/prism.js"></script>
+<main>
+    <div class="intro"><img class="logo" src="./img/K-Loops-logo-full.png" alt="k-Loops"/></div>
+    <div class="tagline"><h1>Live Coding system in Kotlin for Ableton Live</h1></div>
+    <!-- Find your icons from here - https://fontawesome.com/icons?d=gallery&s=brands -->
+    <div class="icons-social">
+        <a target="_blank" href="https://github.com/Onuchin-Artem/k-Loops">
+            <i class="fab fa-github"></i></a>
+        <a target="_blank" href="https://join.slack.com/t/kloops/shared_invite/enQtODk0NDg3Nzk2OTk3LWU4MzVjNWI4YzZiOGU2NjNhZTRmZTAyODQ1ZWM2NTA4ZDRhNDM3NGI2OWJlNTY2MWQ3ZDZiMTk4ZGNmNjFmYTg"><i class="fab fa-slack"></i></a>
+        <a target="_blank" href="https://groups.google.com/forum/#!forum/k-loops"><i class="fab fa-google"></i></a>
+    </div>
+    <hr/>
+
+    <div class="text">
+        <div>
+            <h2>Intro</h2>
+            <p><span class="kloops">k-Loops</span> is a system for <a href="https://toplap.org/">live-coding</a>. It allows to use Kotlin as a tool for
+                artistic expression.</p>
+            <p><span class="kloops">k-Loops</span> is free and open source although it relies on <a
+                    href="https://www.ableton.com/en/live/">Ableton Live</a> which is not free. </p>
+        </div>
+        <div>
+            <h2>Principles</h2>
+
+            <div class="principles">
+            <div>
+                <i class="demo-icon icon-kotlin"> </i>
+				<h4>Use Powerful Language</h4>
+                <p><span class="kloops">k-Loops</span> is developed in <a href="https://kotlinlang.org/">Kotlin</a> - very powerful jvm-based programming language.</p>
+				<p>In you live coding you can you whole power of this language and supporting tools:
+					you can abstract and reuse common functionality, you can use automatic refactoring, and code suggestions.</p>
+				<p><span class="kloops">k-Loops</span> is the only live-coding system developed in Kotlin and if you like this language you should give it a try.</p>
+
+			</div>
+            <div>
+                <i class="icon-ableton"> </i>
+				<h4>Ableton Live as a Synth Backend</h4>
+				<p><span class="kloops">k-Loops</span> is a system that allow algorithmically control <a
+                        href="https://www.ableton.com/en/live/">Ableton Live</a>:
+					you can play any midi tracks and you can easily discover and change any controls in ableton</p>
+				<p><a href="https://www.ableton.com/en/live/">Ableton Live</a> is a great backend for live coding system: it has hundreds of instruments and effects that are very high quality.</p>
+				<p>Vast majority of live coding systems integrate with SuperCollider synth, that is pretty outdated comparing with Live.</p>
+
+			</div>
+            <div>
+                <i class="icon-midi"> </i>
+                <h4>Focus on Midi Control</h4>
+				<p><span class="kloops">k-Loops's</span> focus is control of midi instruments: i.e. working with samples is deprioritized.</p>
+				<p>Big reason for this is that <a href="https://www.ableton.com/en/live/">Ableton Live</a> itself is a great tool to work with samples:
+					once sample is imported in simpler, sampler or drum rack it's easily available for k-loops</p>
+				<p>Focus on midi control allowed to make it really right.</p>
+			</div>
+            <div>
+                <i class="icon-row"> </i>
+                <h4>Develop Right Abstractions</h4>
+				<p><span class="kloops">k-Loops</span> is based on very few flexible and powerful low-level abstractions,
+					such as <code>triggers</code>, <code>playAsync</code>, <code>silence</code>.</p>
+				<p>These abstraction are used as bricks to build more convinient high-level abstractions, such as
+					<code>patterns</code> and <code>sequences</code></p>
+				<p>Both types of abstractions are available to use you can use high-level abstraction to express very
+					complex idea succinctly or you can use low-level abstraction to program music exactly how you want.</p>
+            </div>
+        </div>
+        </div>
+        <div>
+            <h2>Examples</h2>
+
+            <h5>Synth-Pop</h5>
+            <div class="example">
+            <pre><code class="language-kotlin">
+val runBackgroundTasks = startBackgroundTasks()
+
+loop("main loop") {
+    "c2 a2 c2 a2 e2 f2 c3 c3".toSeq().forEach { n ->
+        if (n == "c3") triggerEvent("c3")
+        else triggerEvent("c2")
+        sequencer(_8th) {
+            "k . sn . k k sn .".play(track("drums"), 1.0)
+            "c3 g3 e3".play(track("keys 1"), 0.5)
+            "$n . $n .".play(track("bass"), 1.0)
+        }
+    }
+}
+
+loop("hi hat") {
+    silence(_8th)
+    track("drums").play("ch", _4th, 0.5)
+    triggerEvent("hat")
+}
+
+runWhenEvent("additional drums", listOf("hat")) {
+    sequencer(_16th) {
+        "co rm".play(track("drums"), 1.0)
+    }
+}
+
+runWhenEvent("pads 1", listOf("c2")) {
+    sequencer(_4th) {
+        "e4  . . f4 ".play(track("pad"), velocity = 0.3, length = _q.dot())
+    }
+}
+
+runWhenEvent("pads 2", listOf("c3")) {
+    track("pad").playAsync("c4", _half, 0.1)
+}
+            </code></pre>
+            <audio preload="auto" tabindex="0" controls="controls" type="audio/mpeg">
+                <source type="audio/mp3" src="mp3/pop.mp3">
+                Sorry, your browser does not support HTML5 audio.
+            </audio>
+            </div>
+            <h5>Polyrithmic Techno</h5>
+            <div class="example">
+
+            <pre><code class="language-kotlin">
+val runBackgroundTasks = startBackgroundTasks()
+
+loop("techno") {
+    sequencer(_16th) {
+        "k . co . cl . co co".play(track("drums"), velocity = 0.5)
+        val bass2Length = listOf(2, 5, 7, 1, 3).look() o 64
+        val velocity = listOf(0.2, 0.0, 0.1, 0.1).look()
+        "a1 . . g1".play(track("bass"), velocity = velocity, length = bass2Length)
+        val cutoff = triag(from = 0.01, to = 0.25, period = 12, t1 = 8)
+        val mod = sine(from = 0.6, to = 0.7, period = 4, jitter = 0.1)
+        val delay = trapezoid(from = 0.0, to = 1.0, period = 16 * 32, t1 = 7 * 16, t2 = 20 * 16)
+        val midGain = rect(from = 0.5, to = 0.60, period = 8, phase = 0.5)
+        master().device("master").parameter("mid gain").setValue(midGain)
+        track("bass").parameter("mod").setValue(mod)
+        track("bass").parameter("cutoff").setValue(cutoff)
+        track("bass").sends("Delay").setValue(delay)
+    }
+}
+
+loop("techno2") {
+    sequencer(_16th) {
+        setLoopVelocity(trapezoid(period = 16 * 16, t1 = 4 * 16))
+        "k . . sn k . .".play(track("drums"), velocity = 0.7)
+        ". . rd ch . .".play(track("drums"), velocity = 0.1, length = _32nd)
+        "clave clave . . clave .".play(track("drums"), velocity = 0.5)
+    }
+}
+
+loop("techno3") {
+    sequencer(_16th) {
+        setLoopVelocity(trapezoid(period = 16 * 16, t1 = 4 * 16, phase = 0.5))
+        "mid . rm mid . .".play(track("drums"), velocity = 0.5)
+        ". . sn sn . .".play(track("drums"), velocity = 0.5)
+    }
+}
+            </code></pre>
+            <audio preload="auto" tabindex="0" controls="" type="audio/mpeg">
+                <source type="audio/mp3" src="mp3/techno.mp3">
+                Sorry, your browser does not support HTML5 audio.
+            </audio>
+            </div>
+            <p>More example can be found on <a target="_blank" href="https://github.com/Onuchin-Artem/k-Loops/tree/master/src/main/kotlin/kLoops/examples">Github</a>!</p>
+        </div>
+        <div>
+            <h2>Install</h2>
+                <div class="install">
+                        <p>Install <a target="_blank" href="https://www.ableton.com/en/trial/">Ableton Live Trial</a> and <a target="_blank" href="https://www.jetbrains.com/idea/download/">IntelliJ IDEA Community</a></p>
+                        <p>Checkout k-Loops project from Github: <a target="_blank" href="https://github.com/Onuchin-Artem/k-Loops">https://github.com/Onuchin-Artem/k-Loops</a></p>
+                        <p>In Ableton Live put <code>k-loops_master</code> on master track and <code>k-loops_midi</code> on every other track.</p>
+                        <p>Open k-loops in IntelliJ. To launch kotlin REPL click <code>Tools</code> → <code>Kotlin</code> → <code>Kotlin REPL</code>.</p>
+                    <p>Run <code class="language-kotlin">startBackgroundTasks()</code>. You are ready to improvise!</p>
+                    </ol>
+                </div>
+        </div>
+        <div class="cta">
+            <h2>Community</h2>
+            <div class="community">
+            <ul>
+                <li><span class="icons-social"><a target="_blank" href="https://github.com/Onuchin-Artem/k-Loops"><i class="fab fa-github"></i></a></span>
+                    Make pull request and feature requests at <a target="_blank" href="https://github.com/Onuchin-Artem/k-Loops">Github</a></li>
+                <li><span class="icons-social"><a target="_blank" href="https://join.slack.com/t/kloops/shared_invite/enQtODk0NDg3Nzk2OTk3LWU4MzVjNWI4YzZiOGU2NjNhZTRmZTAyODQ1ZWM2NTA4ZDRhNDM3NGI2OWJlNTY2MWQ3ZDZiMTk4ZGNmNjFmYTg"><i class="fab fa-slack"></i></a></span>
+                    Join <a target="_blank" href="https://join.slack.com/t/kloops/shared_invite/enQtODk0NDg3Nzk2OTk3LWU4MzVjNWI4YzZiOGU2NjNhZTRmZTAyODQ1ZWM2NTA4ZDRhNDM3NGI2OWJlNTY2MWQ3ZDZiMTk4ZGNmNjFmYTg">Slack channel</a> to get help and show your creations</li>
+                <li><span class="icons-social"><a target="_blank" href="https://groups.google.com/forum/#!forum/k-loops"><i class="fab fa-google"></i></a> </span>
+                    Join main-group at <a target="_blank" href="https://groups.google.com/forum/#!forum/k-loops">Google forum</a></li>
+            </ul>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    <div>© Copyright <a href="https://github.com/Onuchin-Artem">Artem Onuchin</a></div>
+    <div>Star and support this project on <a href="https://github.com/Onuchin-Artem/k-Loops">github</a>.</div>
+</footer>
+</body>
+</html>

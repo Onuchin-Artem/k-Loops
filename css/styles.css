@@ -1,0 +1,238 @@
+/* Theme */
+
+main {
+	background: #FFFFFF;
+	color: #000000;
+}
+
+.icons-social a {
+	color: #0033A0;
+}
+.icons-social a svg path{
+	fill: #0033A0;
+}
+.icons-social i {
+	font-size: 2em;
+}
+
+/* Minimal CSS Reset */
+
+html {
+	box-sizing: border-box;
+	font-size: 12px;
+}
+
+*, *:before, *:after {
+	box-sizing: inherit;
+}
+
+body, h1, h2, h3, ul {
+	margin: 0;
+	padding: 0;
+}
+h2 {
+	margin-bottom: 10px;
+}
+
+p {
+	margin: 0;
+	padding: 2px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-align: center;
+	color: #0033A0;
+}
+
+span.kloops  {
+	color: #0033A0;
+}
+
+ol, ul {
+	padding: 5px;
+}
+
+ul {
+	list-style: none;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+}
+
+.logo {
+	width: 25%;
+}
+/* Typography */
+
+html {
+	font-family: 'Roboto', sans-serif;
+}
+
+@media (min-width: 576px) {
+	html {
+		font-size: 14px;
+	}
+}
+
+@media (min-width: 768px) {
+	html {
+		font-size: 16px;
+	}
+}
+
+@media (min-width: 992px) {
+	html {
+		font-size: 18px;
+	}
+}
+
+/* Custom Styles */
+
+main {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	justify-content: center;
+	padding: 30px;
+	text-align: center;
+	align-items: center;
+}
+
+main > .text {
+	max-width: 800px;
+}
+
+main > .text > div {
+	margin-bottom: 20px;
+}
+main > .tagline > h1 {
+	font-size: 1.5rem;
+	margin: 1.5rem 0;
+	font-weight: 100;
+	color: #0033A0;
+}
+
+.icons-social i {
+	padding: 10px;
+	color: #0033A0;
+}
+
+.devto {
+	margin-bottom: -0.20rem;
+}
+
+.devto svg {
+	margin-bottom: -0.20rem;
+	margin-left: 0.675rem;;
+	width: 2.65rem;
+	height: 2.65rem;
+}
+
+hr {
+	margin-top: 30px;
+	border-width: 0;
+	border-top: 2px solid #0033A0;
+	width: 20%;
+}
+
+main > .text {
+	font-size: 1.0rem;
+	margin: 1.5rem 0;
+	font-weight: lighter;
+	text-align: start;
+}
+
+.principles {
+	align-self: center;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+.principles > div > i {
+	font-size: 1.0rem;
+	color: #0033A0;
+}
+.principles > div {
+	flex: auto;
+	min-width: 150px;
+	max-width: 380px;
+	text-align: center;
+	padding: 10px;
+	margin: 5px;
+	border: 1px #0033A0 solid;
+}
+
+h4 {
+	padding: 0;
+	margin-bottom: 5px;
+	margin-top: 10px;
+}
+
+h5 {
+	padding: 0;
+	margin-left: 15px;
+	margin-bottom: 3px;
+	margin-top: 20px;
+	text-align: left;
+}
+
+
+.principles > div p {
+	text-align: start;
+	font-size: 0.7rem;
+
+}
+
+.cta {
+	text-align: center;
+}
+
+.cta div {
+	display: inline-block;
+	text-align: left;
+	max-width: 700px;
+	padding: 10px;
+	margin: 3px;
+	background-color: #fafdff;
+	border-radius: 5px;
+	border: thin #e5eaff solid;
+
+
+}
+.install p {
+	padding: 5px;
+}
+
+.community {
+	font-size: 1.2em;
+}
+
+span.icons-social i {
+	font-size: 1em;
+}
+
+audio {
+	width: 240px;
+	padding: 2px;
+}
+
+.example {
+	position: relative;
+}
+
+.example > audio {
+	position: absolute;
+	top: 0;
+	right: 13px;
+	height: 2em;
+	background-color: #f6f8fb;
+	border: 1px solid #e5eaff;
+	border-bottom-left-radius: 10px;
+}
+
+footer {
+	text-align: center;
+	font-size: 0.6em;
+}
